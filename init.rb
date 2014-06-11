@@ -90,7 +90,7 @@ Redmine::Plugin.register :redmine_impasse do
     menu.push :custom_field, {:controller => 'impasse_custom_fields'}, :caption => :label_custom_field_plural,
     :html => {:class => 'custom_fields'}
   end
-
-  Mime::Type.register_alias "application/json", :json_impasse
+ # commenting this out to test if this works or not without it..  will break other plugins..  very bad!
+ # Mime::Type.register_alias "application/json", :json_impasse
 end
 

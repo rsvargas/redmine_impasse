@@ -6,9 +6,15 @@ class ImpasseTestCaseController < ImpasseAbstractController
   helper :custom_fields
   include CustomFieldsHelper
   include ImpasseScreenshotsHelper
+  helper_method :collection_for_relation_type_select
 
   menu_item :impasse
   before_filter :find_project, :authorize
+
+  def collection_for_relation_type_select
+    values = IssueRelation::TYPES
+    values.keys.sort{|x,y| values[x][:order] <=> values[y][:order]}.collect{|k| [l(values[k][:name]), k]}
+  end
 
   def index
     if User.current.allowed_to?(:move_issues, @project)

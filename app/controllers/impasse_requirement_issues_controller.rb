@@ -42,7 +42,7 @@ class ImpasseRequirementIssuesController < ImpasseAbstractController
 
   def add_test_case
     ActiveRecord::Base.transaction do
-      requirement_issue = Impasse::RequirementIssue.find_by_issue_id(params[:issue_id]) || Impasse::RequirementIssue.create(:issue_id => params[:issue_id])
+      requirement_issue = Impasse::RequirementIssue.find_by_issue_id(params[:relation][:issue_to_id]) || Impasse::RequirementIssue.create(:issue_id => params[:relation][:issue_to_id])
       node = Impasse::Node.find(params[:test_case_id])
       if node.is_test_case?
         create_requirement_case(requirement_issue.id, node.id)

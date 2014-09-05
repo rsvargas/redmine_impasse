@@ -51,6 +51,7 @@ en:
   label_execution_ts: "Executed"
   label_executor: "Executor"
   label_execution_status: "Status"
+  label_execution_notes: "Notes
 
   label_filters_query: "Includes words "
   label_filters_keywords: "Keywords"

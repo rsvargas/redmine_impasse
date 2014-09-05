@@ -26,16 +26,6 @@
   </div>
   <% end %>
 
-  <%= form_for @relation, {
-      :as => :relation, :remote => true,
-      :url => {:controller => 'impasse_requirement_issues', :action => 'add_test_case', :project_id => @project.identifier, :test_case_id => @test_case.id},
-      :method => :post,
-      :complete => "Form.Element.focus('relation_issue_to_id');",
-      :html => {:id => 'new-relation-form'}
-  } do |f| %>
-    <%= render :partial => 'relation_form', :locals => {:f => f}%>
-  <% end %>
-  
   <% if @test_case.preconditions? %>
   <p><strong><%=l(:field_preconditions)%></strong></p>
   <%= textilizable @test_case, :preconditions %>

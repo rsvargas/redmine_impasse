@@ -48,6 +48,12 @@ object_to_prepare.to_prepare do
     :foreign_key => 'project_id',
     :association_foreign_key => 'custom_field_id'  
   end
+
+  Issue.class_eval do
+    has_many :requirement_issues,
+             :class_name => 'Impasse::RequirementIssue',
+             :join_table => 'impasse_requirement_issues'
+  end
 end
 
 Redmine::Plugin.register :redmine_impasse do

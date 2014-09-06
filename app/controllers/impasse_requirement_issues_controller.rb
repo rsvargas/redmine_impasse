@@ -57,6 +57,19 @@ class ImpasseRequirementIssuesController < ImpasseAbstractController
 
     logger.error @query.inspect
 
+    if @query.valid?
+      @limit = per_page_option
+
+      @issue_count = @query.issue_count
+      @issue_pages = Paginator.new self, @issue_count, @limit, params['page']
+      @offset ||= @issue_pages.current.offset
+      @issues = @query.issues(:include => [:assigned_to, :tracker, :priority, :category, :fixed_version],
+                              :order => sort_clause,
+                              :offset => @offset,
+                              :limit => @limit)
+      @issue_count_by_group = @query.issue_count_by_group
+    end
+
   end
 
   def add_test_case

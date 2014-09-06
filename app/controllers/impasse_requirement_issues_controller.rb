@@ -40,9 +40,29 @@ class ImpasseRequirementIssuesController < ImpasseAbstractController
     render_404
   end
 
+  def traceability_report
+    @project = Project.find(params[:project_id])
+    setting = Impasse::Setting.find_by_project_id(@project.id)
+    params[:set_filter] = true
+    params[:fields] ||= []
+    params[:fields] << 'tracker_id'
+    params[:values] ||= {}
+    params[:values][:tracker_id] = setting.requirement_tracker.select{|e| e != ""}
+    params[:operators] ||= {}
+    params[:operators][:tracker_id] = "="
+
+    retrieve_query
+    sort_init(@query.sort_criteria.empty? ? [['id', 'desc']] : @query.sort_criteria)
+    sort_update(@query.sortable_columns)
+
+    logger.error @query.inspect
+
+  end
+
   def add_test_case
     ActiveRecord::Base.transaction do
-      requirement_issue = Impasse::RequirementIssue.find_by_issue_id(params[:issue_id]) || Impasse::RequirementIssue.create(:issue_id => params[:issue_id])
+      requirement_issue = Impasse::RequirementIssue.find_by_issue_id(params[:issue_id]) ||
+          Impasse::RequirementIssue.create(:issue_id => params[:issue_id])
       node = Impasse::Node.find(params[:test_case_id])
       if node.is_test_case?
         create_requirement_case(requirement_issue.id, node.id)

@@ -73,7 +73,7 @@ Redmine::Plugin.register :redmine_impasse do
       'impasse_test_plans' => [:new, :edit, :destroy,:copy, :add_test_case, :remove_test_case],
       'impasse_executions' => [:new, :edit, :destroy, :put],
       'impasse_execution_bugs' => [:new, :edit, :destroy, :upload_attachments],
-      'impasse_requirement_issues' => [:add_test_case, :remove_test_case],
+      'impasse_requirement_issues' => [:add_test_case, :remove_test_case, :traceability_report],
       'impasse_screenshots' => [:new, :destroy],
     }, :require => :member
 

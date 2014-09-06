@@ -92,5 +92,7 @@ Redmine::Plugin.register :redmine_impasse do
   end
  # commenting this out to test if this works or not without it..  will break other plugins..  very bad!
  # Mime::Type.register_alias "application/json", :json_impasse
+
+  require 'impasse_issue_patch'
 end
 

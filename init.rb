@@ -51,8 +51,10 @@ object_to_prepare.to_prepare do
 
   Issue.class_eval do
     has_many :requirement_issues,
-             :class_name => 'Impasse::RequirementIssue',
-             :join_table => 'impasse_requirement_issues'
+             :class_name => 'Impasse::RequirementIssue'
+
+    has_many :test_cases, :through => :requirement_issues,
+             :class_name => 'Impasse::TestCase'
   end
 end
 

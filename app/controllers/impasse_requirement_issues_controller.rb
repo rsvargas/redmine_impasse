@@ -42,15 +42,6 @@ class ImpasseRequirementIssuesController < ImpasseAbstractController
 
   def traceability_report
     @project = Project.find(params[:project_id])
-    setting = Impasse::Setting.find_by_project_id(@project.id)
-    params[:set_filter] = true
-    params[:fields] ||= []
-    params[:fields] << 'tracker_id'
-    params[:values] ||= {}
-    params[:values][:tracker_id] = setting.requirement_tracker.select{|e| e != ""}
-    params[:operators] ||= {}
-    params[:operators][:tracker_id] = "="
-
     retrieve_query
     sort_init(@query.sort_criteria.empty? ? [['id', 'desc']] : @query.sort_criteria)
     sort_update(@query.sortable_columns)
@@ -92,7 +83,7 @@ class ImpasseRequirementIssuesController < ImpasseAbstractController
               end
             end
           else
-            @issues_with_tests << "#{issue.id},#{issue.subject},,,,,,,"
+            @issues_with_tests << "#{issue.id},#{issue.subject},Not Assigned,,,,,,"
           end
         end
       end

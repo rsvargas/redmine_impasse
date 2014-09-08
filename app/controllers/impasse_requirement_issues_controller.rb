@@ -59,7 +59,7 @@ class ImpasseRequirementIssuesController < ImpasseAbstractController
 
     if @query.valid?
       case params[:format]
-        when 'csv', 'pdf'
+        when 'csv'
           @limit = Setting.issues_export_limit.to_i
         else
           @limit = per_page_option
@@ -73,10 +73,33 @@ class ImpasseRequirementIssuesController < ImpasseAbstractController
                               :offset => @offset,
                               :limit => @limit)
       @issue_count_by_group = @query.issue_count_by_group
+      @issues_with_tests = []
+      if params[:format] == 'csv'
+        @issues_with_tests << 'Requirement #,User Requirement,Test Case,Step,Procedure,Expected Result,Actual Result, Pass/Fail,Initial/Date'
+        @issues.each do |issue|
+          if issue.test_cases.present?
+            issue.test_cases.each_with_index do |tc, index|
+              tc.test_steps.each_with_index do |ts, ts_index|
+                if (index == 0 && ts_index == 0)
+                  @issues_with_tests << "#{issue.id},#{issue.subject},#{tc.id}: #{tc.node.name},#{ts.step_number},#{ts.actions},#{ts.expected_results},,,"
+                else
+                  if (ts_index == 0)
+                    @issues_with_tests << ",,#{tc.id}: #{tc.node.name},#{ts.step_number},#{ts.actions},#{ts.expected_results},,,"
+                  else
+                    @issues_with_tests << ",,,#{ts.step_number},#{ts.actions},#{ts.expected_results},,,"
+                  end
+                end
+              end
+            end
+          else
+            @issues_with_tests << "#{issue.id},#{issue.subject},,,,,,,"
+          end
+        end
+      end
 
       respond_to do |format|
         format.html
-        format.csv { send_data(query_to_csv(@issues, @query, params), :type => 'text/csv; header=present', :filename => 'traceability_report.csv') }
+        format.csv { send_data(@issues_with_tests.join("\n"), :type => 'text/csv; header=present', :filename => 'traceability_report.csv') }
       end
     end
 
@@ -115,3 +138,4 @@ class ImpasseRequirementIssuesController < ImpasseAbstractController
   end
 
 end
+

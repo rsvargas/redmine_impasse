@@ -58,7 +58,12 @@ class ImpasseRequirementIssuesController < ImpasseAbstractController
     logger.error @query.inspect
 
     if @query.valid?
-      @limit = per_page_option
+      case params[:format]
+        when 'csv', 'pdf'
+          @limit = Setting.issues_export_limit.to_i
+        else
+          @limit = per_page_option
+      end
 
       @issue_count = @query.issue_count
       @issue_pages = Paginator.new self, @issue_count, @limit, params['page']
@@ -68,6 +73,11 @@ class ImpasseRequirementIssuesController < ImpasseAbstractController
                               :offset => @offset,
                               :limit => @limit)
       @issue_count_by_group = @query.issue_count_by_group
+
+      respond_to do |format|
+        format.html
+        format.csv { send_data(query_to_csv(@issues, @query, params), :type => 'text/csv; header=present', :filename => 'traceability_report.csv') }
+      end
     end
 
   end

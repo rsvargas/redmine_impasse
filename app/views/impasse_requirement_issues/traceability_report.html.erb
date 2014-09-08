@@ -8,31 +8,64 @@
         <tr>
             <th>#</th>
             <th><%= l(:field_subject) %></th>
-            <th>Test Case #</th>
+            <th>Test Case</th>
             <th>Step #</th>
             <th>Action</th>
             <th>Expected Results</th>
         </tr>
         </thead>
         <tbody>
-        <% for issue in @issues %>
-          <tr id="issue-<%= h(issue.id) %>" class="jstree-draggable <%= cycle('odd', 'even') %> <%= issue.css_classes %>">
-              <td class="id">
-                  <%= h(issue.id) %>
-              </td>
-              <td class="subject">
-                  <%= h(truncate(issue.subject, :length => 60)) %> (<%= h issue.status %>)
-              </td>
-              <% if issue.test_cases.present? %>
-              <td><%= raw issue.test_cases.map {|tc| tc.id}.join('<br/>') %></td>
-              <td><%= raw issue.test_cases.map {|tc| tc.test_steps.map {|ts| ts.step_number}.join('<br/>')}.join('') %></td>
-              <td><%= raw issue.test_cases.map {|tc| tc.test_steps.map {|ts| ts.actions}.join('<br/>')}.join('') %></td>
-              <td><%= raw issue.test_cases.map {|tc| tc.test_steps.map {|ts| ts.expected_results}.join('<br/>')}.join('') %></td>
+        <% @issues.each do |issue| %>
+          <% if issue.test_cases.present? %>
+            <% issue.test_cases.each_with_index do |tc, index| %>
+              <% tc.test_steps.each_with_index do |ts, ts_index| %>
+                <tr id="issue-<%= h(issue.id) %>" class="<%= cycle('odd', 'even') %> <%= issue.css_classes %>">
+                  <% if index == 0 && ts_index ==0 %>
+                    <td class="id">
+                      <%= h(issue.id) %>
+                    </td>
+                    <td class="subject">
+                      <%= h(truncate(issue.subject, :length => 60)) %> (<%= h issue.status %>)
+                    </td>
+                  <% else %>
+                    <td class="id">
+                      &nbsp;
+                    </td>
+                    <td class="subject">
+                      &nbsp;
+                    </td>
+                  <% end %>
+                  <% if ts_index == 0 %>
+                    <td><%= raw "#{tc.id}: #{tc.node.name}" %></td>
+                  <% else %>
+                    <td>&nbsp;</td>
+                  <% end %>
+                    <td><%= raw ts.step_number %></td>
+                    <td><%= raw ts.actions %></td>
+                    <td><%= raw ts.expected_results %></td>
+                </tr>
               <% end %>
-          </tr>
+            <% end %>
+          <% else %>
+            <tr id="issue-<%= h(issue.id) %>" class="<%= cycle('odd', 'even') %> <%= issue.css_classes %>">
+                <td class="id">
+                    <%= h(issue.id) %>
+                </td>
+                <td class="subject">
+                    <%= h(truncate(issue.subject, :length => 60)) %> (<%= h issue.status %>)
+                </td>
+                <td>Not Assigned</td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+          <% end %>
         <% end %>
         </tbody>
     </table>
     <p class="pagination"><%= pagination_links_full @issue_pages, @issue_count %></p>
+    <% other_formats_links do |f| %>
+      <%= f.link_to 'CSV', :url => params %>
+    <% end %>
   <% end %>
 <% end %>

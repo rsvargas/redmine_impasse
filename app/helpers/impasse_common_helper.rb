@@ -22,4 +22,10 @@ module ImpasseCommonHelper
       elements.any? ? content_tag('p', args.join(" \xc2\xbb ").html_safe, :class => 'breadcrumb') : nil
     end
   end
+
+  def collection_for_relation_type_select
+    values = IssueRelation::TYPES
+    values.keys.sort{|x,y| values[x][:order] <=> values[y][:order]}.collect{|k| [l(values[k][:name]), k]}
+  end
+
 end

@@ -1,0 +1,4 @@
+.idea/*
+Gemfile.lock
+atlassian-ide-plugin.xml
+redmine_impasse.iml

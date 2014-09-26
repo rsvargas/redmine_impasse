@@ -1,7 +1,14 @@
 module Impasse
+
   class Node < ActiveRecord::Base
     unloadable
-    set_table_name "impasse_nodes"
+    
+    if Rails::VERSION::MAJOR >= 3 
+      self.table_name = 'impasse_nodes'
+    else
+      set_table_name "impasse_nodes"
+    end
+    
     self.include_root_in_json = false
 
     belongs_to :parent, :class_name=>'Node', :foreign_key=> :parent_id
@@ -11,6 +18,56 @@ module Impasse
 
     validates_presence_of :name
 
+    @@concatinated_path =
+      case configurations[Rails.env]['adapter']
+        when /mysql/
+          "CONCAT(:path, head.id, '.')"
+        when /sqlserver/
+          ":path + head.id + '.'"
+        else
+          ":path || head.id || '.'"
+        end
+  
+    @@length_for_sql =
+      case configurations[Rails.env]['adapter']
+        when /mysql/
+          "LENGTH"
+        when /sqlserver/
+          "LEN"
+        else
+          "LENGTH"
+        end
+
+    @@substr_for_sql =
+      case configurations[Rails.env]['adapter']
+        when /mysql/
+          "SUBSTR"
+        when /sqlserver/
+          "SUBSTRING"
+        else
+          "SUBSTR"
+        end
+
+    @@exists_for_sql_initial =
+      case configurations[Rails.env]['adapter']
+        when /mysql/
+          "EXISTS("
+        when /sqlserver/
+          "CASE WHEN EXISTS("
+        else
+          "EXISTS(" # not yet tested
+        end
+
+    @@exists_for_sql_final =
+      case configurations[Rails.env]['adapter']
+        when /mysql/
+          ")"
+        when /sqlserver/
+          ") THEN 1 ELSE 0 END "
+        else
+          ")" # not yet tested
+        end
+
     if Rails::VERSION::MAJOR < 3 or (Rails::VERSION::MAJOR == 3 and Rails::VERSION::MINOR < 1)
       def dup
         clone
@@ -19,14 +76,15 @@ module Impasse
 
     def self.find_with_children(id)
       node = self.find(id)
-      self.find_by_sql([ <<-END_OF_SQL, "#{node.path}%"])
-        SELECT distinct parent.*, LENGTH(parent.path) - LENGTH(REPLACE(parent.path,'.','')) - 2 AS level
-          FROM impasse_nodes AS parent
-          JOIN impasse_nodes AS child
-            ON parent.path = SUBSTR(child.path, 1, LENGTH(parent.path))
-         WHERE parent.path like ?
-        ORDER BY level, node_order
-      END_OF_SQL
+      
+      sql =  " SELECT distinct parent.*, " + @@length_for_sql + "(parent.path) - " + @@length_for_sql + "(REPLACE(parent.path,'.','')) - 2 AS level"
+      sql << " FROM impasse_nodes AS parent"
+      sql << " JOIN impasse_nodes AS child"
+      sql << "    ON parent.path = " + @@substr_for_sql + "(child.path, 1, " + @@length_for_sql + "(parent.path))"
+      sql << " WHERE parent.path like ?"
+      sql << " ORDER BY level, node_order"
+      
+      self.find_by_sql([sql, "#{node.path}%"])
     end
 
     def is_test_case?
@@ -37,8 +95,13 @@ module Impasse
       self.node_type_id == 2
     end
 
-    def active?
-      !attributes['active'] or attributes['active'].to_i == 1 or attributes['active'].is_a? TrueClass or attributes['active'] == 't'
+    def active?    
+      case configurations[Rails.env]['adapter']
+        when /sqlserver/
+          (!attributes['active']) or (attributes['active'].blank? ? false : (attributes['active'] == '1')) or (attributes['active'].is_a? TrueClass) or (attributes['active'] == 't')
+        else
+          !attributes['active'] or attributes['active'].to_i  == 1 or attributes['active'].is_a? TrueClass or attributes['active'] == 't'
+        end    
     end
 
     def planned?
@@ -49,10 +112,10 @@ module Impasse
       sql = <<-'END_OF_SQL'
       SELECT node.*, tc.active
       FROM (
-        SELECT distinct parent.*, LENGTH(parent.path) - LENGTH(REPLACE(parent.path,'.','')) AS level
+        SELECT distinct parent.*, <%= @@length_for_sql %>(parent.path) - <%= @@length_for_sql %>(REPLACE(parent.path,'.','')) level
           FROM impasse_nodes AS parent
         JOIN impasse_nodes AS child
-          ON parent.path = SUBSTR(child.path, 1, LENGTH(parent.path))
+          ON parent.path = <%= @@substr_for_sql %>(child.path, 1, <%= @@length_for_sql %>(parent.path))
         <%- if conditions.include? :test_plan_id -%>
         LEFT JOIN impasse_test_cases AS tc
           ON tc.id=child.id
@@ -67,7 +130,7 @@ module Impasse
           AND parent.path LIKE :path
         <%- end -%>
         <%- if conditions.include? :level -%>
-          AND LENGTH(parent.path) - LENGTH(REPLACE(parent.path,'.','')) <= :level
+          AND <%= @@length_for_sql %>(parent.path) - <%= @@length_for_sql %>(REPLACE(parent.path,'.','')) <= :level
         <%- end -%>
         <%- if conditions.include? :filters_query or conditions.include? :filters_keywords -%>
         AND
@@ -76,20 +139,21 @@ module Impasse
              <%- if conditions.include? :filters_keywords -%>AND <%- end -%>
           <%- end -%>
           <%- if conditions.include? :filters_keywords -%>
-            exists (
-            SELECT 1 FROM impasse_node_keywords AS nk
-              JOIN impasse_keywords AS k ON k.id = nk.keyword_id
-            WHERE nk.node_id = child.id
-              AND k.keyword in (:filters_keywords))
+            <%= @@exists_for_sql_initial %>
+              SELECT 1 FROM impasse_node_keywords AS nk
+                JOIN impasse_keywords AS k ON k.id = nk.keyword_id
+              WHERE nk.node_id = child.id
+                AND k.keyword in (:filters_keywords)
+            <%= @@exists_for_sql_final %>  
           <%- end -%>
         <%- end -%>
-        ORDER BY level, node_order
       ) AS node
       LEFT OUTER JOIN impasse_test_cases AS tc
         ON node.id = tc.id
       WHERE 1=1
       <%- unless conditions.include? :filters_inactive -%>
         AND tc.active = :true OR tc.active IS NULL
+        ORDER BY level, node_order
       <%- end -%>
       END_OF_SQL
 
@@ -126,21 +190,22 @@ module Impasse
 
     def self.find_planned(node_id, test_plan_id=nil, filters={}, limit=300)
       sql = <<-'END_OF_SQL'
-    SELECT T.*, LENGTH(T.path) - LENGTH(REPLACE(T.path,'.','')) AS level, E.expected_date, E.status, users.firstname, users.lastname
+    SELECT T.*, <%= @@length_for_sql %>(T.path) - <%= @@length_for_sql %>(REPLACE(T.path,'.','')) level, 
+      E.expected_date, E.status, users.firstname, users.lastname
       FROM (
         SELECT distinct parent.*, tpc.test_plan_id
           FROM impasse_nodes AS parent
           JOIN impasse_nodes AS child
-            ON parent.path = SUBSTR(child.path, 1, LENGTH(parent.path))
+            ON parent.path = <%= @@substr_for_sql %>(child.path, 1, <%= @@length_for_sql %>(parent.path))
      LEFT JOIN impasse_test_cases AS tc
             ON child.id = tc.id
      LEFT JOIN impasse_test_plan_cases AS tpc
             ON tc.id=tpc.test_case_id
-     LEFT JOIN impasse_executions AS exec
-            ON tpc.id = exec.test_plan_case_id
+     LEFT JOIN impasse_executions AS execut
+            ON tpc.id = execut.test_plan_case_id
          WHERE tpc.test_plan_id=:test_plan_id
      <%- if conditions.include? :level -%>
-           AND LENGTH(parent.path) - LENGTH(REPLACE(parent.path,'.','')) <= :level
+           AND <%= @@length_for_sql %>(parent.path) - <%= @@length_for_sql %>(REPLACE(parent.path,'.','')) <= :level
      <%- end -%>
      <%- if conditions.include? :path -%>
            AND parent.path LIKE :path
@@ -150,10 +215,10 @@ module Impasse
            AND tester_id = :user_id
        <%- end -%>
        <%- if conditions.include? :execution_status -%>
-           AND (exec.status IN (:execution_status) <%- if conditions[:execution_status].include? "0" %>OR exec.status IS NULL<% end %> )
+           AND (execut.status IN (:execution_status) <%- if conditions[:execution_status].include? "0" %>OR execut.status IS NULL<% end %> )
        <%- end -%>
        <%- if conditions.include? :expected_date -%>
-           AND exec.expected_date <%= conditions[:expected_date_op] %> :expected_date
+           AND execut.expected_date <%= conditions[:expected_date_op] %> :expected_date
        <%- end -%>
      <%- end -%>
       ) AS T
@@ -216,7 +281,7 @@ ORDER BY level, T.node_order
       SELECT distinct parent.*
         FROM impasse_nodes AS parent
       JOIN impasse_nodes AS child
-        ON parent.path = SUBSTR(child.path, 1, LENGTH(parent.path))
+        ON parent.path = <%= @@substr_for_sql %>(child.path, 1, <%= @@length_for_sql %>(parent.path))
       LEFT JOIN impasse_test_cases AS tc
         ON child.id = tc.id
       WHERE parent.path LIKE :path
@@ -228,11 +293,15 @@ ORDER BY level, T.node_order
 
     def all_decendant_cases_with_plan
       sql = <<-'END_OF_SQL'
-      SELECT distinct parent.*, LENGTH(parent.path) - LENGTH(REPLACE(parent.path,'.','')) AS level,
-             tc.active, exists (SELECT * FROM impasse_test_plan_cases AS tpc WHERE tpc.test_case_id = parent.id) AS planned
+      SELECT distinct parent.*, <%= @@length_for_sql %>(parent.path) - <%= @@length_for_sql %>(REPLACE(parent.path,'.','')) level,
+             tc.active, 
+             <%= @@exists_for_sql_initial %>
+                SELECT * FROM impasse_test_plan_cases AS tpc WHERE tpc.test_case_id = parent.id
+             <%= @@exists_for_sql_final %> 
+             AS planned
         FROM impasse_nodes AS parent
       JOIN impasse_nodes AS child
-        ON parent.path = SUBSTR(child.path, 1, LENGTH(parent.path))
+        ON parent.path = <%= @@substr_for_sql %>(child.path, 1, <%= @@length_for_sql %>(parent.path))
       LEFT JOIN impasse_test_cases AS tc
         ON child.id = tc.id
       WHERE parent.path LIKE :path
@@ -285,7 +354,7 @@ ORDER BY level, T.node_order
     end
  
     def update_child_nodes_path(old_path)
-      sql = <<-END_OF_SQL
+      sql = <<-'END_OF_SQL'
       UPDATE impasse_nodes
       SET path = replace(path, '#{old_path}', '#{self.path}')
       WHERE path like '#{old_path}_%'

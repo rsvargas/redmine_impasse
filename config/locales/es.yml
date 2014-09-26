@@ -1,5 +1,5 @@
 # Spanish strings go here for Rails i18n
-en:
+es:
   project_module_impasse: "Gesti&oacute;n de Pruebas"
 
   label_impasse: "Pruebas"

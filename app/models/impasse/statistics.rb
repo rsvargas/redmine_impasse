@@ -5,7 +5,7 @@ module Impasse
     if Rails::VERSION::MAJOR >= 3 
       self.table_name = 'impasse_test_plans'
     else
-      set_table_name "impasse_test_plans"
+      self.table_name = "impasse_test_plans"
     end    
     
     self.include_root_in_json = false

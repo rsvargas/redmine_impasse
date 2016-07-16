@@ -1,3 +1,17 @@
+<% content_for :header_tags do %>
+  <style>
+    .wrapword{
+      white-space: -moz-pre-wrap !important;  /* Mozilla, since 1999 */
+      white-space: -pre-wrap;      /* Opera 4-6 */
+      white-space: -o-pre-wrap;    /* Opera 7 */
+      white-space: pre-wrap;       /* css-3 */
+      word-wrap: break-word;       /* Internet Explorer 5.5+ */
+      word-break: break-all;
+      white-space: normal;
+      max-width: 100px;
+    }
+  </style>
+<% end %>
 <% test_plan_case = @execution.test_plan_case
    test_case = test_plan_case.test_case %>
 <%= f.hidden_field :id %>
@@ -5,58 +19,63 @@
 <%= hidden_field 'test_plan_case', 'test_case_id', :value => @execution.test_plan_case.test_case_id %>
 <div id="errorExplanation" style="display:none"></div>
 <div class="box tabular">
-  <p><%=label_tag :name, l(:field_name) %><%=h test_case.node.name %></p>
-  <div class="tabular-row"><%=label_tag :summary, l(:field_summary) %>
-    <div class="wiki"><%=textilizable test_case, :summary %></div>
+  <p><%= label_tag :name, l(:field_name) %><%= h test_case.node.name %></p>
+
+  <div class="tabular-row"><%= label_tag :summary, l(:field_summary) %>
+    <div class="wiki"><%= textilizable test_case, :summary %></div>
   </div>
   <% if !test_case.preconditions.nil? and test_case.preconditions.length > 0 %>
-  <div class="tabular-row"><%=label_tag :preconditions, l(:field_preconditions)%>
-    <div class="wiki"><%=textilizable test_case, :preconditions%></div>
-  </div>
+    <div class="tabular-row"><%= label_tag :preconditions, l(:field_preconditions) %>
+      <div class="wiki"><%= textilizable test_case, :preconditions %></div>
+    </div>
   <% end %>
   <% if test_case.attachments.size > 0 %>
-  <div class="tabular-row">
-    <label><%=l(:label_screenshots)%></label>
-    <%= render :partial => "impasse_screenshots/list", :locals => { :attachments => test_case.attachments } %>
-  </div>
+    <div class="tabular-row">
+      <label><%= l(:label_screenshots) %></label>
+      <%= render :partial => "impasse_screenshots/list", :locals => {:attachments => test_case.attachments} %>
+    </div>
   <% end %>
   <% if test_case.test_steps.size > 0 %>
-  <div class="tabular-row">
-    <label><%=l(:field_test_steps)%></label>
-    <table class="list">
-      <thead>
-	<tr>
-	  <th>#</th>
-	  <th><%=l(:field_actions)%></th>
-	  <th><%=l(:field_expected_results)%></th>
-	</tr>
-      </thead>
-      <tbody>
-	<% test_case.test_steps.each do |test_step| %>
-	<tr>
-	  <td><%= test_step.step_number %></td>
-	  <td><%=h test_step.actions %></td>
-	  <td><%=h test_step.expected_results %></td>
-	</tr>
-	<% end %>
-      </tbody>
-    </table>
-  </div>
+    <div class="tabular-row">
+      <label><%= l(:field_test_steps) %></label>
+      <table class="list">
+        <thead>
+        <tr>
+          <th>#</th>
+          <th><%= l(:field_actions) %></th>
+          <th><%= l(:field_expected_results) %></th>
+        </tr>
+        </thead>
+        <tbody>
+        <% test_case.test_steps.each do |test_step| %>
+          <tr>
+            <td><%= test_step.step_number %></td>
+            <td class="wiki"><%= textilizable test_step.actions %></td>
+            <td class="wiki"><%= textilizable test_step.expected_results %></td>
+          </tr>
+        <% end %>
+        </tbody>
+      </table>
+    </div>
   <% end %>
 
   <div class="tabular-row">
-    <label><%=l :field_execution_status %></label>
+    <label><%= l :field_execution_status %></label>
+
     <div>
-      <%= f.radio_button :status, "0" %><span class="label"><%=l(:label_execution_status_0) %></span>
-      <%= f.radio_button :status, "1"%><span class="label"><%=l(:label_execution_status_1) %></span>
-      <%= f.radio_button :status, "2"%><span class="label"><%=l(:label_execution_status_2) %></span>
-      <%= f.radio_button :status, "3"%><span class="label"><%=l(:label_execution_status_3) %></span>
+      <%= f.radio_button :status, "1" %>
+      <span class="label"><%= l(:label_execution_status_1) %></span>
+      <%= f.radio_button :status, "2" %>
+      <span class="label"><%= l(:label_execution_status_2) %></span>
     </div>
   </div>
-  <p <% if @execution.issues.size == 0 %>style="display:none;"<% end %>>
-    <%=label_tag :issue, l(:default_tracker_bug) %>
-    <span id="execution-bugs-list"><%=raw @execution.issues.collect{|issue| link_to("##{issue.id}", {:controller=>'/issues', :action=>:show, :id=>issue }, :class => issue.css_classes) }.join(",") %></span>
+  <p
+  <% if @execution.issues.size == 0 %>style="display:none;"
+  <% end %>>
+    <%= label_tag :issue, l(:default_tracker_bug) %>
+    <span id="execution-bugs-list"><%= raw @execution.issues.collect { |issue| link_to("##{issue.id}", {:controller => '/issues', :action => :show, :id => issue}, :class => issue.css_classes) }.join(",") %></span>
   </p>
+
   <p><%= f.text_area :notes, :label => :field_notes, :rows => 4 %></p>
   <% @execution.custom_field_values.each do |value| %>
     <p><%= custom_field_tag_with_label :execution, value %></p>
@@ -64,24 +83,26 @@
   <p><%= submit_tag l(:button_save) %><p>
 
   <% unless @execution_histories.empty? %>
-  <fieldset class="collapsible collapsed">
-     <legend onclick="toggleFieldset(this);"><%= l(:label_execution_histories) %></legend>
-     <div style="display:none;">
-       <table class="list">
-	 <tr>
-	   <th><%=l(:label_execution_ts)%></th>
-	   <th><%=l(:label_executor)%></th>
-	   <th><%=l(:label_execution_status)%></th>
-	 </tr>
-	 <% @execution_histories.each do |history| %>
-	 <tr class="entry">
-	   <td class="center"><%= format_time(history.execution_ts) %></td>
-	   <td class="center"><%= history.executor.name %></td>
-	   <td class="center"><%= format_status(history.status) %></td>
-	 </tr>
-	 <% end %>
-       </table>
-     </div>
-  </fieldset>
+    <fieldset class="collapsible collapsed">
+      <legend onclick="toggleFieldset(this);"><%= l(:label_execution_histories) %></legend>
+      <div style="display:none;">
+        <table class="list" style="table-layout:fixed">
+          <tr>
+            <th><%= l(:label_execution_ts) %></th>
+            <th><%= l(:label_executor) %></th>
+            <th><%= l(:label_execution_status) %></th>
+            <th><%= l(:label_execution_notes) %></th>
+          </tr>
+          <% @execution_histories.each do |history| %>
+            <tr class="entry">
+              <td class="center"><%= format_time(history.execution_ts) %></td>
+              <td class="center"><%= history.executor.name %></td>
+              <td class="center"><%= format_status(history.status) %></td>
+              <td class="wrapword"><%= history.notes %></td>
+            </tr>
+          <% end %>
+        </table>
+      </div>
+    </fieldset>
   <% end %>
 </div>

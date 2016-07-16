@@ -1,19 +1,48 @@
 module Impasse
   class Statistics < ActiveRecord::Base
     unloadable
-    set_table_name 'impasse_test_plans'
+    
+    if Rails::VERSION::MAJOR >= 3 
+      self.table_name = 'impasse_test_plans'
+    else
+      self.table_name = "impasse_test_plans"
+    end    
+    
     self.include_root_in_json = false
+    
+    
+    @@concatinated_path =
+      case configurations[Rails.env]['adapter']
+        when /mysql/
+          "CONCAT(:path, head.id, '.')"
+        when /sqlserver/
+          ":path + head.id + '.'"
+        else
+          ":path || head.id || '.'"
+        end
+  
+    @@length_for_sql =
+      case configurations[Rails.env]['adapter']
+        when /mysql/
+          "LENGTH"
+        when /sqlserver/
+          "LEN"
+        else
+          "LENGTH"
+        end
+
+    @@substr_for_sql =
+      case configurations[Rails.env]['adapter']
+        when /mysql/
+          "SUBSTR"
+        when /sqlserver/
+          "SUBSTRING"
+        else
+          "SUBSTR"
+        end    
 
     def self.summary_default(test_plan_id, test_suite_id=nil)
       conditions = { :test_plan_id => test_plan_id }
-      concatinated_path = case configurations[Rails.env]['adapter']
-                          when /mysql/
-                            "CONCAT(:path, head.id, '.')"
-                          when /sqlserver/
-                            ":path + head.id + '.'" # Not tested
-                          else
-                            ":path || head.id || '.'"
-                          end
                             
       if test_suite_id
         suite = Node.find(test_suite_id)
@@ -44,7 +73,7 @@ module Impasse
         ON tc.id = n.id
       <%- if conditions[:path] -%>
       INNER JOIN impasse_nodes AS head
-        ON head.path = SUBSTR(n.path, 1, LENGTH(<%=concatinated_path%>))
+        ON head.path = <%= @@substr_for_sql -%>(n.path, 1, <%= @@length_for_sql -%>(<%= @@concatinated_path -%>))
       <%- end -%>
       LEFT OUTER JOIN impasse_executions AS exe
         ON exe.test_plan_case_id = tpc.id
@@ -61,8 +90,8 @@ module Impasse
       WHERE tp.id = :test_plan_id
       <%- if conditions[:path] -%>
         AND n.path LIKE :path_starts_with
-        AND LENGTH(head.path) - LENGTH(REPLACE(head.path, '.', '')) = :level
-      GROUP BY head.id, head.name, head.node_type_id, SUBSTR(n.path, 1, LENGTH(<%=concatinated_path%>))
+        AND <%= @@length_for_sql -%>(head.path) - <%= @@length_for_sql -%>(REPLACE(head.path, '.', '')) = :level
+      GROUP BY head.id, head.name, head.node_type_id, <%= @@substr_for_sql -%>(n.path, 1, <%= @@length_for_sql -%>(<%= @@concatinated_path -%>))
       <%- else -%>
       GROUP BY tp.id, tp.name, node_type_id
       <%- end -%>
@@ -115,7 +144,7 @@ LEFT OUTER JOIN users
 
     def self.summary_daily(test_plan_id, test_suite_id=nil)
       sql = <<-END_OF_SQL
-SELECT CASE WHEN execution_ts IS NULL OR exe.status='0' THEN NULL ELSE execution_ts END AS execution_date,
+SELECT CASE WHEN execution_ts IS NULL OR exe.status='0' THEN NULL ELSE cast(execution_ts as date) END AS execution_date,
   SUM(CASE exe.status WHEN '1' THEN 1 ELSE 0 END) AS ok,
   SUM(CASE exe.status WHEN '2' THEN 1 ELSE 0 END) AS ng,
   SUM(CASE exe.status WHEN '3' THEN 1 ELSE 0 END) AS block,
@@ -126,7 +155,7 @@ INNER JOIN impasse_test_plan_cases AS tpc
 LEFT OUTER JOIN impasse_executions AS exe
   ON exe.test_plan_case_id = tpc.id
 WHERE tpc.test_plan_id=?
-GROUP BY execution_date
+GROUP BY CASE WHEN execution_ts IS NULL OR exe.status='0' THEN NULL ELSE execution_ts END
       END_OF_SQL
       statistics = find_by_sql([sql, test_plan_id])
 

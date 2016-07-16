@@ -48,13 +48,21 @@ object_to_prepare.to_prepare do
     :foreign_key => 'project_id',
     :association_foreign_key => 'custom_field_id'  
   end
+
+  Issue.class_eval do
+    has_many :requirement_issues,
+             :class_name => 'Impasse::RequirementIssue'
+
+    has_many :test_cases, :through => :requirement_issues,
+             :class_name => 'Impasse::TestCase'
+  end
 end
 
 Redmine::Plugin.register :redmine_impasse do
   name 'Redmine Impasse plugin'
   author 'kawasima'
   description 'Test management tool integrated Redmine'
-  version '1.2.2'
+  version '1.3.0'
   url 'http://unit8.net/redmine_impasse'
   author_url 'http://unit8.net/'
 
@@ -73,7 +81,7 @@ Redmine::Plugin.register :redmine_impasse do
       'impasse_test_plans' => [:new, :edit, :destroy,:copy, :add_test_case, :remove_test_case],
       'impasse_executions' => [:new, :edit, :destroy, :put],
       'impasse_execution_bugs' => [:new, :edit, :destroy, :upload_attachments],
-      'impasse_requirement_issues' => [:add_test_case, :remove_test_case],
+      'impasse_requirement_issues' => [:add_test_case, :remove_test_case, :traceability_report],
       'impasse_screenshots' => [:new, :destroy],
     }, :require => :member
 
@@ -90,7 +98,10 @@ Redmine::Plugin.register :redmine_impasse do
     menu.push :custom_field, {:controller => 'impasse_custom_fields'}, :caption => :label_custom_field_plural,
     :html => {:class => 'custom_fields'}
   end
-
-  Mime::Type.register "application/json", :json_impasse
+ # commenting this out to test if this works or not without it..  will break other plugins..  very bad!
+ # Mime::Type.register_alias "application/json", :json_impasse
+end
+Rails.configuration.to_prepare do
+  require 'impasse_issue_patch'
 end
 

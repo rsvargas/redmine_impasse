@@ -28,10 +28,9 @@ class ImpasseExecutionsController < ImpasseAbstractController
     status = 'success'
     errors = []
     for test_case_id in test_case_ids
-      test_plan_case = Impasse::TestPlanCase.find(:first, :conditions=>[
-                                                                        "test_plan_id=? AND test_case_id=?",
+      test_plan_case = Impasse::TestPlanCase.where("test_plan_id=? AND test_case_id=?",
                                                                         params[:test_plan_case][:test_plan_id],
-                                                                        test_case_id])
+                                                                        test_case_id).first
       next if test_plan_case.nil?
       execution = Impasse::Execution.find_or_initialize_by_test_plan_case_id(test_plan_case.id)
       execution.attributes = params[:execution]
@@ -66,8 +65,8 @@ class ImpasseExecutionsController < ImpasseAbstractController
 
     status = true
     for test_case_id in test_case_ids
-      test_plan_case = Impasse::TestPlanCase.find(:first, :conditions=>[
-                         "test_plan_id=? AND test_case_id=?", params[:test_plan_case][:test_plan_id], test_case_id])
+      test_plan_case = Impasse::TestPlanCase.where(
+                         "test_plan_id=? AND test_case_id=?", params[:test_plan_case][:test_plan_id], test_case_id).first
       next if test_plan_case.nil?
       execution = Impasse::Execution.find_by_test_plan_case_id(test_plan_case.id)
       next if execution.nil?
@@ -104,9 +103,7 @@ END_OF_SQL
       @execution = executions.first
     end
     @execution.attributes = params[:execution]
-    @execution_histories = Impasse::ExecutionHistory.find(:all, :joins => [ :executor ],
-                                                          :conditions => ["test_plan_case_id=?", @execution.test_plan_case_id],
-                                                          :order => "execution_ts DESC")
+    @execution_histories = Impasse::ExecutionHistory.joins(:executor).where("test_plan_case_id=?", @execution.test_plan_case_id).order("execution_ts DESC")
     if request.post? and @execution.save
       render :json => {'status'=>true}
     else

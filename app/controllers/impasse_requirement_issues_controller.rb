@@ -116,7 +116,7 @@ class ImpasseRequirementIssuesController < ImpasseAbstractController
   def remove_test_case
     ActiveRecord::Base.transaction do
       requirement_issue = Impasse::RequirementIssue.find(params[:id])
-      requirement_cases = requirement_issue.requirement_cases.find(:first, :conditions => { :test_case_id => params[:test_case_id] })
+      requirement_cases = requirement_issue.requirement_cases.where({ :test_case_id => params[:test_case_id] }).first
       requirement_cases.destroy
 
       render :json => { :status => 'success', :message => l(:notice_successful_delete) }

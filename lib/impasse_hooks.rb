@@ -17,7 +17,8 @@ module ImpassePlugin
 
         project = context[:project]
         snippet = ''
-  
+        return snippet unless project
+
         setting = Impasse::Setting.find_by_project_id(project.id) || Impasse::Setting.create(:project_id => project.id)
 
         if setting.bug_tracker_id == issue.tracker_id

@@ -280,7 +280,7 @@ class ImpasseTestCaseController < ImpasseAbstractController
               new_test_suite.id = new_node.id
               new_test_suite.save!
             when 3
-              test_case = Impasse::TestCase.find(:first, :conditions => { :id => node.id }, :include => :test_steps)
+              test_case = Impasse::TestCase.where({ :id => node.id }).includes(:test_steps)
               new_test_case = test_case.dup
               new_test_case.id = new_node.id
               new_test_case.save!
@@ -353,7 +353,7 @@ class ImpasseTestCaseController < ImpasseAbstractController
   def find_project
     begin
       @project = Project.find(params[:project_id])
-      @project_node = Impasse::Node.find(:first, :conditions=>["name=? and node_type_id=?", @project.identifier, 1])
+      @project_node = Impasse::Node.where("name=? and node_type_id=?", @project.identifier, 1).first
       if @project_node.nil?
         @project_node = Impasse::Node.new(:name=>@project.identifier, :node_type_id=>1, :node_order=>1)
         @project_node.save

@@ -15,7 +15,7 @@ class ImpasseTestPlansController < ImpasseAbstractController
   end
 
   def show
-    @test_plan = Impasse::TestPlan.find(:first, :conditions => { :id => params[:id]}, :include => :version)
+    @test_plan = Impasse::TestPlan.where(:id => params[:id]).includes(:version).first
     @setting = Impasse::Setting.find_by_project_id(@project) || Impasse::Setting.create(:project_id => @project.id)
   end
 
@@ -106,9 +106,9 @@ class ImpasseTestPlansController < ImpasseAbstractController
   def add_test_case
     if params.include? :test_case_ids
       new_cases = 0
-      nodes = Impasse::Node.find(:all, :conditions => ["id in (?)", params[:test_case_ids]])
+      nodes = Impasse::Node.where("id in (?)", params[:test_case_ids])
       ActiveRecord::Base.transaction do
-        for node in nodes
+        nodes.each do |node|
           test_case_ids = []
           if node.is_test_suite?
             test_case_ids.concat node.all_decendant_cases.collect{|n| n.id}

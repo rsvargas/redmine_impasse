@@ -165,7 +165,7 @@ module Impasse
 
       unless node_id.to_i == -1
         node = find(node_id)
-        child_counts = self.count(:conditions => [ "path like ?", "#{node.path}_%"])
+        child_counts = self.where("path like ?", "#{node.path}_%").count
         if child_counts > limit
           conditions[:level] = node.path.count('.') + 1
         end
@@ -236,13 +236,13 @@ ORDER BY level, T.node_order
 
       unless node_id.to_i == -1
         node = self.find(node_id)
-        child_counts = self.count(:conditions => [ "path like ?", "#{node.path}_%"])
+        child_counts = self.where("path like ?", "#{node.path}_%").count
         if child_counts > limit
           conditions[:level] = node.path.count('.') + 1
         end
         conditions[:path] = "#{node.path}_%"
       else
-        child_counts = Impasse::TestPlanCase.count(:conditions => [ "test_plan_id=?", test_plan_id])
+        child_counts = Impasse::TestPlanCase.where("test_plan_id=?", test_plan_id).count
         if child_counts > limit
           conditions[:level] = 3
         end
@@ -334,9 +334,7 @@ ORDER BY level, T.node_order
     end
 
     def update_siblings_order!
-      siblings = Node.find(:all,
-                           :conditions=>["parent_id=? and id != ?", self.parent_id, self.id],
-                           :order=>:node_order)
+      siblings = Node.where("parent_id=? and id != ?", self.parent_id, self.id).order(:node_order)
       if self.node_order < siblings.size
         siblings.insert(self.node_order, self)
       else

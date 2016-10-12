@@ -43,7 +43,7 @@ module Impasse
 
       test_plans_by_version = {}
       versions.each do |version|
-        test_plans = TestPlan.find(:all, :conditions => ["version_id=?", version.id])
+        test_plans = TestPlan.where("version_id=?", version.id)
         test_plans_by_version[version] = test_plans
       end
       [test_plans_by_version, versions]

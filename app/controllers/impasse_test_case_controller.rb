@@ -125,7 +125,7 @@ class ImpasseTestCaseController < ImpasseAbstractController
 
   def edit
     @node, @test_case = get_node(params[:node])
-    @test_case.attributes = params[:test_case]
+    @test_case.attributes = params.require(:test_case).permit!
     @setting = Impasse::Setting.find_by_project_id(@project) || Impasse::Setting.create(:project_id => @project.id)
 
     if request.post? or request.put?
@@ -321,7 +321,7 @@ class ImpasseTestCaseController < ImpasseAbstractController
 
   def get_node(node_params)
     node = Impasse::Node.find(node_params[:id])
-    node.attributes = node_params
+    node.attributes = node_params.permit!
 
     if node.is_test_case?
       test_case = Impasse::TestCase.find(node_params[:id])

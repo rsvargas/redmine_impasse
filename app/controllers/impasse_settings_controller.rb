@@ -11,7 +11,7 @@ class ImpasseSettingsController < ImpasseAbstractController
     unless params[:setting][:requirement_tracker]
       params[:setting][:requirement_tracker] = []
     end
-    @setting.attributes = params[:setting]
+    @setting.attributes = params.require(:setting).permit!
     if request.put? or request.post?
       ActiveRecord::Base.transaction do
         custom_fields_by_type = {

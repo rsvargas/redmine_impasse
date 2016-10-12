@@ -81,7 +81,7 @@ class ImpasseExecutionBugsController < ImpasseAbstractController
     end
 
     if params[:issue].is_a?(Hash)
-      @issue.safe_attributes = params[:issue]
+      @issue.safe_attributes = params.require(:issue).permit!
       if Redmine::VERSION::MAJOR == 1 and Redmine::VERSION::MINOR < 4
         if User.current.allowed_to?(:add_issue_watchers, @project) && @issue.new_record?
           @issue.watcher_user_ids = params[:issue]['watcher_user_ids']

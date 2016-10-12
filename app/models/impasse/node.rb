@@ -16,10 +16,10 @@ module Impasse
     has_many   :node_keywords, :class_name => "Impasse::NodeKeyword", :dependent => :delete_all
     has_many   :keywords, :through => :node_keywords
 
-    validates_presence_of :name
+    validates :name, presence: true
 
     @@concatinated_path =
-      case configurations[Rails.env]['adapter']
+      case Impasse::Node.configurations[Rails.env]['adapter']
         when /mysql/
           "CONCAT(:path, head.id, '.')"
         when /sqlserver/
@@ -29,7 +29,7 @@ module Impasse
         end
   
     @@length_for_sql =
-      case configurations[Rails.env]['adapter']
+      case Impasse::Node.configurations[Rails.env]['adapter']
         when /mysql/
           "LENGTH"
         when /sqlserver/
@@ -39,7 +39,7 @@ module Impasse
         end
 
     @@substr_for_sql =
-      case configurations[Rails.env]['adapter']
+      case Impasse::Node.configurations[Rails.env]['adapter']
         when /mysql/
           "SUBSTR"
         when /sqlserver/
@@ -49,7 +49,7 @@ module Impasse
         end
 
     @@exists_for_sql_initial =
-      case configurations[Rails.env]['adapter']
+      case Impasse::Node.configurations[Rails.env]['adapter']
         when /mysql/
           "EXISTS("
         when /sqlserver/
@@ -59,7 +59,7 @@ module Impasse
         end
 
     @@exists_for_sql_final =
-      case configurations[Rails.env]['adapter']
+      case Impasse::Node.configurations[Rails.env]['adapter']
         when /mysql/
           ")"
         when /sqlserver/
@@ -96,7 +96,7 @@ module Impasse
     end
 
     def active?    
-      case configurations[Rails.env]['adapter']
+      case Impasse::Node.configurations[Rails.env]['adapter']
         when /sqlserver/
           (!attributes['active']) or (attributes['active'].blank? ? false : (attributes['active'] == '1')) or (attributes['active'].is_a? TrueClass) or (attributes['active'] == 't')
         else

@@ -60,7 +60,7 @@ class ImpasseTestPlansController < ImpasseAbstractController
         new_test_plan = @test_plan.dup
         new_test_plan.save!
 
-        test_plan_cases = Impasse::TestPlanCase.find_all_by_test_plan_id(params[:id])
+        test_plan_cases = Impasse::TestPlanCase.where(test_plan_id: params[:id])
         for test_plan_case in test_plan_cases
           Impasse::TestPlanCase.create(:test_plan_id => new_test_plan.id, :test_case_id => test_plan_case.test_case_id)
         end

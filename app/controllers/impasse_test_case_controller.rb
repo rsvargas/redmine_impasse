@@ -209,7 +209,7 @@ class ImpasseTestCaseController < ImpasseAbstractController
   end
 
   def keywords
-    keywords = Impasse::Keyword.find_all_by_project_id(@project).map{|r| r.keyword}
+    keywords = Impasse::Keyword.where(project_id: @project).to_a.map{|r| r.keyword}
     render :json => keywords
   end
 
@@ -239,8 +239,8 @@ class ImpasseTestCaseController < ImpasseAbstractController
     begin
       keyword_hash = {}
       parents = {}
-      dest_keywords = Impasse::Keyword.find_all_by_project_id(dest_project.id) || []
-      src_keywords  = Impasse::Keyword.find_all_by_project_id(@project.id) || []
+      dest_keywords = Impasse::Keyword.where(project_id: dest_project.id) || []
+      src_keywords  = Impasse::Keyword.where(project_id: @project.id) || []
       
       for src_keyword in src_keywords
         dest_keyword = dest_keywords.detect {|keyword| keyword.keyword == src_keyword.keyword}

@@ -364,7 +364,7 @@ ORDER BY level, T.node_order
     def save_keywords!(keywords = "")
       root_node = Impasse::Node.find(self.path.sub(/^\.(\d+)\.[\d\.]*$/, '\1').to_i)
       project = Project.find(root_node.name)
-      project_keywords = Impasse::Keyword.find_all_by_project_id(project)
+      project_keywords = Impasse::Keyword.where(project_id: project)
       words = keywords.split(/\s*,\s*/)
       words.delete_if {|word| word =~ /^\s*$/}.uniq!
 

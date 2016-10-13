@@ -9,7 +9,7 @@ class ImpasseTestCaseController < ImpasseAbstractController
   helper_method :collection_for_relation_type_select
 
   menu_item :impasse
-  before_filter :find_project, :authorize
+  before_action :find_project, :authorize
 
   def collection_for_relation_type_select
     values = IssueRelation::TYPES

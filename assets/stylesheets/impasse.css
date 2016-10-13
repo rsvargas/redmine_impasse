@@ -116,3 +116,7 @@ li[rel="test_case"][data-inactive="true"] a {
 #requirements-view {
   overflow:auto;
 }
+
+.contextual {
+    z-index: 1;
+}

@@ -126,8 +126,6 @@ END_OF_SQL
       end
       assign_text = []
       if node.firstname or node.lastname
-        firstname = node.firstname
-        lastname  = node.lastname
         assign_text << User.new(:firstname => node.firstname, :lastname => node.lastname).name
       end
       if node.expected_date

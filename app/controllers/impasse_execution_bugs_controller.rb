@@ -74,7 +74,11 @@ class ImpasseExecutionBugsController < ImpasseAbstractController
       @issue = @project.issues.visible.find(params[:id])
     end
     @issue.project = @project    # Tracker must be set before custom field values
-    @issue.tracker ||= @project.trackers.find((params[:issue] && params[:issue][:tracker_id]) || params[:tracker_id] || :first)
+    if (params[:issue] && params[:issue][:tracker_id]) || params[:tracker_id]
+      @issue.tracker ||= @project.trackers.find_by_tracker_id((params[:issue] && params[:issue][:tracker_id]) || params[:tracker_id])
+    else
+      @issue.tracker ||= @project.trackers.first
+    end
     if @issue.tracker.nil?
       render_error l(:error_no_tracker_in_project)
       return false

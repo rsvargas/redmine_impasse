@@ -20,7 +20,7 @@ class ImpasseTestPlansController < ImpasseAbstractController
   end
 
   def new
-    @test_plan = Impasse::TestPlan.new(params[:test_plan])
+    @test_plan = Impasse::TestPlan.new(params.require(:test_plan).permit!)
 	if request.post?
 		if params[:test_plan][:version_id].nil?
 			flash[:error] = "Please create a version"

@@ -309,12 +309,12 @@ class ImpasseTestCaseController < ImpasseAbstractController
 
     case params[:node_type]
     when 'test_case'
-      @test_case = Impasse::TestCase.new(params[:node_type] && params.require(:test_case).permit!)
+      @test_case = Impasse::TestCase.new(params[:test_case] && params.require(:test_case).permit!)
       @test_case.active = true
       @test_case.importance = 2
       @node.node_type_id = 3
     else
-      @test_case = Impasse::TestSuite.new(params[:node_type] && params.require(:test_case).permit!)
+      @test_case = Impasse::TestSuite.new(params[:test_case] && params.require(:test_case).permit!)
       @node.node_type_id = 2
     end
   end

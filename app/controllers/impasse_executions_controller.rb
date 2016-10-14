@@ -33,7 +33,7 @@ class ImpasseExecutionsController < ImpasseAbstractController
                                                                         test_case_id).first
       next if test_plan_case.nil?
       execution = Impasse::Execution.find_or_initialize_by_test_plan_case_id(test_plan_case.id)
-      execution.attributes = params.require(:execution).permit!
+      execution.attributes = params.require(:execution).permit! if params[:execution]
       if params[:record]
         execution.execution_ts = Time.now.to_datetime
         execution.executor_id = User.current.id

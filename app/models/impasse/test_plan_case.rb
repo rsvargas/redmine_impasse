@@ -22,7 +22,7 @@ WHERE test_plan_id=#{test_plan_id}
   )
       END_OF_SQL
       
-      connection.update(sql)
+      self.class.connection.update(sql)
     end
 
     if Rails::VERSION::MAJOR < 3 or (Rails::VERSION::MAJOR == 3 and Rails::VERSION::MINOR < 1)

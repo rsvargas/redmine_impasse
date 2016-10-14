@@ -358,7 +358,7 @@ ORDER BY level, T.node_order
       WHERE path like '#{old_path}_%'
       END_OF_SQL
       
-      connection.update(sql)
+      self.class.connection.update(sql)
     end
 
     def save_keywords!(keywords = "")

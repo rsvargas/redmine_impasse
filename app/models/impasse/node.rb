@@ -334,7 +334,7 @@ ORDER BY level, T.node_order
     end
 
     def update_siblings_order!
-      siblings = Node.where("parent_id=? and id != ?", self.parent_id, self.id).order(:node_order)
+      siblings = Node.where("parent_id=? and id != ?", self.parent_id, self.id).order(:node_order).to_a
       if self.node_order < siblings.size
         siblings.insert(self.node_order, self)
       else

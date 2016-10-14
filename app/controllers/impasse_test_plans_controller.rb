@@ -37,7 +37,7 @@ class ImpasseTestPlansController < ImpasseAbstractController
   def edit
     @test_plan = Impasse::TestPlan.find(params[:id])
     @test_plan.attributes = params.require(:test_plan).permit! if params[:test_plan]
-    if (request.post? or request.put?) and @test_plan.save
+    if (request.post? || request.put? || request.patch?) and @test_plan.save
       flash[:notice] = l(:notice_successful_update)
       redirect_to :action => :show, :project_id => @project, :id => @test_plan
     end
@@ -55,7 +55,7 @@ class ImpasseTestPlansController < ImpasseAbstractController
   def copy
     @test_plan = Impasse::TestPlan.find(params[:id])
     @test_plan.attributes = params.require(:test_plan).permit! if params[:test_plan]
-    if request.post? or request.put?
+    if request.post? || request.put? || request.patch?
       ActiveRecord::Base.transaction do
         new_test_plan = @test_plan.dup
         new_test_plan.save!

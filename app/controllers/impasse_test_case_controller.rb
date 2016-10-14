@@ -50,7 +50,7 @@ class ImpasseTestCaseController < ImpasseAbstractController
     new_node
     @setting = Impasse::Setting.find_by_project_id(@project) || Impasse::Setting.create(:project_id => @project.id)
 
-    if request.post? or request.put?
+    if request.post? || request.put? || request.patch?
       begin
         ActiveRecord::Base.transaction do
           @node.save!
@@ -128,7 +128,7 @@ class ImpasseTestCaseController < ImpasseAbstractController
     @test_case.attributes = params.require(:test_case).permit! if params[:test_case]
     @setting = Impasse::Setting.find_by_project_id(@project) || Impasse::Setting.create(:project_id => @project.id)
 
-    if request.post? or request.put?
+    if request.post? || request.put? || request.patch?
       begin
         ActiveRecord::Base.transaction do
           save_node(@node)

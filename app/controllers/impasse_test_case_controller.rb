@@ -68,7 +68,7 @@ class ImpasseTestCaseController < ImpasseAbstractController
             end
             tmp = tmp_params.sort
             tmp_params.clear
-            @test_steps = tmp.collect{|i, ts| Impasse::TestStep.new(ts) }
+            @test_steps = tmp.collect{|i, ts| Impasse::TestStep.new(ts.permit!) }
             @test_steps.each{|ts| raise ActiveRecord::RecordInvalid.new(ts) unless ts.valid? }
             @test_case.test_steps.replace(@test_steps)
             tmp.clear
@@ -147,7 +147,7 @@ class ImpasseTestCaseController < ImpasseAbstractController
             end
             tmp = tmp_params.sort
             tmp_params.clear
-            @test_steps = tmp.collect{|i, ts| Impasse::TestStep.new(ts) }
+            @test_steps = tmp.collect{|i, ts| Impasse::TestStep.new(ts.permit!) }
             @test_steps.each{|ts| raise ActiveRecord::RecordInvalid.new(ts) unless ts.valid? }
             @test_case.test_steps.replace(@test_steps)
             tmp.clear

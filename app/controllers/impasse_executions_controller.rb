@@ -102,7 +102,7 @@ END_OF_SQL
     else
       @execution = executions.first
     end
-    @execution.attributes = params.require(:execution).permit!
+    @execution.attributes = params.require(:execution).permit! if params[:execution]
     @execution_histories = Impasse::ExecutionHistory.joins(:executor).where("test_plan_case_id=?", @execution.test_plan_case_id).order("execution_ts DESC")
     if request.post? and @execution.save
       render :json => {'status'=>true}

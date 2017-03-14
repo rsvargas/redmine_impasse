@@ -118,10 +118,8 @@ class ImpasseTestPlansController < ImpasseAbstractController
 
           for test_case_id in test_case_ids         
               test_plan_case =
-                Impasse::TestPlanCase.find_or_create_by_test_case_id_and_test_plan_id(
-                                                                                      :test_case_id => test_case_id,
-                                                                                      :test_plan_id => params[:test_plan_id],
-                                                                                      :node_order => 0)
+                Impasse::TestPlanCase.create_with(node_order: 0).find_or_create_by(test_case_id: test_case_id, 
+                test_plan_id: params[:test_plan_id])
               new_cases += 1
           end
         end
@@ -137,7 +135,7 @@ class ImpasseTestPlansController < ImpasseAbstractController
   end
 
   def autocomplete
-    @users = @project.users.like(params[:q]).all(:limit => 100)
+    @users = @project.users.like(params[:q]).limit(100)
     render :layout => false
   end
   

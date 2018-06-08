@@ -67,7 +67,6 @@ li[rel="test_case"][data-inactive="true"] a {
 }
 
 .screenshots {
-    overflow: hidden;
     height: 100px;
 }
 .screenshots .buttons {
@@ -111,12 +110,4 @@ li[rel="test_case"][data-inactive="true"] a {
     position: absolute;
     top: 0;
     right: 0;
-}
-
-#requirements-view {
-  overflow:auto;
-}
-
-.contextual {
-    z-index: 1;
 }

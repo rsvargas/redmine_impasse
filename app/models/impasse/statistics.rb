@@ -1,13 +1,7 @@
 module Impasse
   class Statistics < ActiveRecord::Base
     unloadable
-    
-    if Rails::VERSION::MAJOR >= 3 
-      self.table_name = 'impasse_test_plans'
-    else
-      self.table_name = "impasse_test_plans"
-    end    
-    
+    self.table_name = 'impasse_test_plans'
     self.include_root_in_json = false
     
     
@@ -120,7 +114,7 @@ module Impasse
 
     def self.summary_members(test_plan_id, test_suite_id=nil)
       sql = <<-END_OF_SQL
-SELECT users.id, users.login, users.mail, users.firstname, users.lastname, stat.*
+SELECT users.id, users.login, users.firstname, users.lastname, stat.*
 FROM (
 SELECT
   exe.tester_id,

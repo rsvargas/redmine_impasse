@@ -23,6 +23,7 @@ class ImpasseExecutionBugsController < ImpasseAbstractController
   include RepositoriesHelper
   helper :sort
   include SortHelper
+  helper :issues
   include IssuesHelper
 
   def new
@@ -75,7 +76,7 @@ class ImpasseExecutionBugsController < ImpasseAbstractController
     end
     @issue.project = @project    # Tracker must be set before custom field values
     if (params[:issue] && params[:issue][:tracker_id]) || params[:tracker_id]
-      @issue.tracker ||= @project.trackers.find_by_tracker_id((params[:issue] && params[:issue][:tracker_id]) || params[:tracker_id])
+      @issue.tracker ||= @project.trackers.find((params[:issue] && params[:issue][:tracker_id]) || params[:tracker_id])
     else
       @issue.tracker ||= @project.trackers.first
     end
@@ -99,10 +100,4 @@ class ImpasseExecutionBugsController < ImpasseAbstractController
     @available_watchers = (@issue.project.users.sort + @issue.watcher_users).uniq
   end
 
-  def check_for_default_issue_status
-    if IssueStatus.default.nil?
-      render_error l(:error_no_default_issue_status)
-      return false
-    end
-  end
 end

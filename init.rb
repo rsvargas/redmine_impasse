@@ -62,9 +62,11 @@ Redmine::Plugin.register :redmine_impasse do
   name 'Redmine Impasse plugin'
   author 'kawasima'
   description 'Test management tool integrated Redmine'
-  version '1.3.0'
+  version File.read(File.dirname(__FILE__)+'/version.rdoc')
   url 'http://unit8.net/redmine_impasse'
   author_url 'http://unit8.net/'
+
+  requires_redmine :version_or_higher => '3.4.0'
 
   settings :partial => 'redmine_impasse/setting'
 
@@ -98,8 +100,7 @@ Redmine::Plugin.register :redmine_impasse do
     menu.push :custom_field, {:controller => 'impasse_custom_fields'}, :caption => :label_custom_field_plural,
     :html => {:class => 'custom_fields'}
   end
- # commenting this out to test if this works or not without it..  will break other plugins..  very bad!
- # Mime::Type.register_alias "application/json", :json_impasse
+  Mime::Type.register_alias "application/json", :json_impasse
 end
 Rails.configuration.to_prepare do
   require 'impasse_issue_patch'

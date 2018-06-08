@@ -9,7 +9,7 @@ class ImpasseRequirementIssuesController < ImpasseAbstractController
 
   def index
     @project = Project.find(params[:project_id])
-    setting = Impasse::Setting.find_by_project_id(@project.id)
+    setting = Impasse::Setting.find_by(:project_id => @project.id)
     params[:set_filter] = true
     params[:fields] ||= []
     params[:fields] << 'tracker_id'
@@ -32,7 +32,7 @@ class ImpasseRequirementIssuesController < ImpasseAbstractController
                               :order => sort_clause,
                               :offset => @offset,
                               :limit => @limit)
-      @issue_count_by_group = @query.issue_count_by_group
+      @issue_count_by_group = @query.result_count_by_group
 
       render :index, :layout => !request.xhr?
     end
@@ -116,7 +116,7 @@ class ImpasseRequirementIssuesController < ImpasseAbstractController
   def remove_test_case
     ActiveRecord::Base.transaction do
       requirement_issue = Impasse::RequirementIssue.find(params[:id])
-      requirement_cases = requirement_issue.requirement_cases.where({ :test_case_id => params[:test_case_id] }).first
+      requirement_cases = requirement_issue.requirement_cases.where(:test_case_id => params[:test_case_id]).first
       requirement_cases.destroy
 
       render :json => { :status => 'success', :message => l(:notice_successful_delete) }
@@ -125,7 +125,7 @@ class ImpasseRequirementIssuesController < ImpasseAbstractController
 
   private
   def create_requirement_case(requirement_id, test_case_id) 
-    Impasse::RequirementCase.find_by_requirement_id_and_test_case_id(requirement_id, test_case_id) || Impasse::RequirementCase.create(:requirement_id => requirement_id, :test_case_id => test_case_id)
+    Impasse::RequirementCase.find_by(:requirement_id => requirement_id, :test_case_id => test_case_id) || Impasse::RequirementCase.create(:requirement_id => requirement_id, :test_case_id => test_case_id)
   end
 
 end

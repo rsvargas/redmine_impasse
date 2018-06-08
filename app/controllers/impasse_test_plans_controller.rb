@@ -46,7 +46,7 @@ class ImpasseTestPlansController < ImpasseAbstractController
 
   def destroy
     @test_plan = Impasse::TestPlan.find(params[:id])
-    if request.post? and @test_plan.destroy
+    if (request.post? or request.patch?) and @test_plan.destroy
       flash[:notice] = l(:notice_successful_delete)
       redirect_to :action => :index, :project_id => @project
     end

@@ -67,7 +67,7 @@ class ImpasseExecutionsController < ImpasseAbstractController
       test_plan_case = Impasse::TestPlanCase.where(
                          "test_plan_id=? AND test_case_id=?", params[:test_plan_case][:test_plan_id], test_case_id).first
       next if test_plan_case.nil?
-      execution = Impasse::Execution.find_by_test_plan_case_id(test_plan_case.id)
+      execution = Impasse::Execution.find_by(:test_plan_case_id => test_plan_case.id)
       next if execution.nil?
       execution.tester_id = execution.expected_date = nil
       satus &= execution.save
@@ -96,14 +96,14 @@ END_OF_SQL
     executions = Impasse::Execution.find_by_sql [sql, params[:test_plan_case][:test_plan_id], params[:test_plan_case][:test_case_id]]
     if executions.size == 0
       @execution = Impasse::Execution.new
-      @execution.test_plan_case = Impasse::TestPlanCase.find_by_test_plan_id_and_test_case_id(
-        params[:test_plan_case][:test_plan_id], params[:test_plan_case][:test_case_id])
+      @execution.test_plan_case = Impasse::TestPlanCase.find_by(
+        :test_plan_id => params[:test_plan_case][:test_plan_id], :test_case_id => params[:test_plan_case][:test_case_id])
     else
       @execution = executions.first
     end
     @execution.attributes = params.require(:execution).permit! if params[:execution]
     @execution_histories = Impasse::ExecutionHistory.joins(:executor).where("test_plan_case_id=?", @execution.test_plan_case_id).order("execution_ts DESC")
-    if request.post? and @execution.save
+    if (request.post? or request.patch?) and @execution.save
       render :json => {'status'=>true}
     else
       render :partial=>'edit'

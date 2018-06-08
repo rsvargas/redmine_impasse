@@ -21,12 +21,17 @@ class ImpasseTestCaseController < ImpasseAbstractController
       @allowed_projects = Issue.allowed_target_projects_on_move
       @allowed_projects.delete_if{|project| @project.id == project.id }
     end
-    @setting = Impasse::Setting.find_by_project_id(@project) || Impasse::Setting.create(:project_id => @project.id)
+    @setting = Impasse::Setting.find_by(:project_id => @project) || Impasse::Setting.create(:project_id => @project.id)
+    respond_to do |format|
+      format.html {
+      }
+      format.csv  {send_data(export_to_csv(), :type => 'text/csv; header=present', :filename => 'impasse_export.csv')}
+    end
   end
 
   def list
     if params[:node_id].to_i == -1
-      root = Impasse::Node.find_by_name_and_node_type_id(@project.identifier, 1)
+      root = Impasse::Node.find_by(:name => @project.identifier, :node_type_id => 1)
       @nodes = Impasse::Node.find_children(root.id, params[:test_plan_id], params[:filters])
       root.name = get_root_name(params[:test_plan_id])
       @nodes.unshift(root)
@@ -48,7 +53,7 @@ class ImpasseTestCaseController < ImpasseAbstractController
 
   def new
     new_node
-    @setting = Impasse::Setting.find_by_project_id(@project) || Impasse::Setting.create(:project_id => @project.id)
+    @setting = Impasse::Setting.find_by(:project_id => @project) || Impasse::Setting.create(:project_id => @project.id)
 
     if request.post? || request.put? || request.patch?
       begin
@@ -74,6 +79,10 @@ class ImpasseTestCaseController < ImpasseAbstractController
             tmp.clear
             #</sorting test steps>
             #---------------------------------------------------------------------
+          end
+          if params[:attachments]
+            attachments = Attachment.attach_files(@test_case, params[:attachments])
+            create_thumbnail(attachments) if Object.const_defined?(:Magick)
           end
           @test_case.save!
           render :json => { :status => 'success', :message => l(:notice_successful_create), :ids => [@test_case.id] }
@@ -187,7 +196,7 @@ class ImpasseTestCaseController < ImpasseAbstractController
       ActiveRecord::Base.transaction do
         node.all_decendant_cases_with_plan.each do |child|
           if child.planned?
-            Impasse::TestCase.update_all({:active => false}, ["id=?", child.id])
+            Impasse::TestCase.where(:id => child.id).update_all(:active => false)
             inactive_cases << child
           else
             case child.node_type_id
@@ -209,7 +218,7 @@ class ImpasseTestCaseController < ImpasseAbstractController
   end
 
   def keywords
-    keywords = Impasse::Keyword.where(project_id: @project).to_a.map{|r| r.keyword}
+    keywords = Impasse::Keyword.where(:project_id => @project).map{|r| r.keyword}
     render :json => keywords
   end
 
@@ -260,7 +269,7 @@ class ImpasseTestCaseController < ImpasseAbstractController
           ActiveRecord::Base.transaction do
             new_node = node.dup
             if new_node.node_type_id == 1
-              root = Impasse::Node.find_by_name_and_node_type_id(dest_project.identifier, 1)
+              root = Impasse::Node.find_by(:name => dest_project.identifier, :node_type_id => 1)
               if root
                 new_node = root
                 # TODO get max node order
@@ -280,7 +289,7 @@ class ImpasseTestCaseController < ImpasseAbstractController
               new_test_suite.id = new_node.id
               new_test_suite.save!
             when 3
-              test_case = Impasse::TestCase.where({ :id => node.id }).includes(:test_steps)
+              test_case = Impasse::TestCase.where(:id => node.id).includes(:test_steps).first
               new_test_case = test_case.dup
               new_test_case.id = new_node.id
               new_test_case.save!
@@ -341,6 +350,34 @@ class ImpasseTestCaseController < ImpasseAbstractController
     node.update_child_nodes_path(old_node.path)
   end
 
+  def save_keywords(node, keywords = "")
+    project_keywords = Impasse::Keyword.where(:project_id => @project)
+    words = keywords.split(/\s*,\s*/)
+    words.delete_if {|word| word =~ /^\s*$/}.uniq!
+
+    node_keywords = node.node_keywords
+    keeps = []
+    words.each{|word|
+      keyword = project_keywords.detect {|k| k.keyword == word}
+      if keyword
+        node_keyword = node_keywords.detect {|nk| nk.keyword_id == keyword.id}
+        if node_keyword
+          keeps << node_keyword.id
+        else
+          new_node_keyword = Impasse::NodeKeyword.create(:keyword_id => keyword.id, :node_id => node.id)
+          keeps << new_node_keyword.id
+        end
+      else
+        new_keyword = Impasse::Keyword.create(:keyword => word, :project_id => @project.id)
+        new_node_keyword = Impasse::NodeKeyword.create(:keyword_id => new_keyword.id, :node_id => node.id)
+        keeps << new_node_keyword.id
+      end
+    }
+    node_keywords.each{|node_keyword|
+      node_keyword.destroy unless keeps.include? node_keyword.id
+    }
+  end
+
   def get_root_name(test_plan_id)
     if test_plan_id.nil?
       @project.name
@@ -353,7 +390,7 @@ class ImpasseTestCaseController < ImpasseAbstractController
   def find_project
     begin
       @project = Project.find(params[:project_id])
-      @project_node = Impasse::Node.where("name=? and node_type_id=?", @project.identifier, 1).first
+      @project_node = Impasse::Node.where(:name => @project.identifier, :node_type_id => 1).first
       if @project_node.nil?
         @project_node = Impasse::Node.new(:name=>@project.identifier, :node_type_id=>1, :node_order=>1)
         @project_node.save
@@ -367,7 +404,7 @@ class ImpasseTestCaseController < ImpasseAbstractController
     node = original_node.dup
 
     if node.is_test_case?
-      original_case = Impasse::TestCase.find(original_node.id, :include => :test_steps)
+      original_case = Impasse::TestCase.where(:id => original_node.id).includes(:test_steps).first
       test_case = original_case.dup
       original_case.test_steps.each{|ts| test_case.test_steps << ts.dup }
     else

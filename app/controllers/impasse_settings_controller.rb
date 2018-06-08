@@ -30,7 +30,7 @@ class ImpasseSettingsController < ImpasseAbstractController
         @project.execution_custom_fields  = custom_fields_by_type['Impasse::ExecutionCustomField']
         @setting.save!
         flash[:notice] = l(:notice_successful_update)
-        redirect_to :controller => '/projects', :action => 'settings', :id => @project, :tab => 'impasse'
+        redirect_to settings_project_path(@project, :tab => 'impasse')
       end
     end
   end

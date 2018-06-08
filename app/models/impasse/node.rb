@@ -2,14 +2,10 @@ module Impasse
 
   class Node < ActiveRecord::Base
     unloadable
-    
-    if Rails::VERSION::MAJOR >= 3 
-      self.table_name = 'impasse_nodes'
-    else
-      self.table_name = "impasse_nodes"
-    end
-    
+    self.table_name = "impasse_nodes"
     self.include_root_in_json = false
+
+    attr_accessible :id, :name, :node_type_id, :node_order, :parent_id
 
     belongs_to :parent, :class_name=>'Node', :foreign_key=> :parent_id
     has_many   :children, :class_name=> 'Node', :foreign_key=> :parent_id
@@ -95,17 +91,12 @@ module Impasse
       self.node_type_id == 2
     end
 
-    def active?    
-      case Impasse::Node.configurations[Rails.env]['adapter']
-        when /sqlserver/
-          (!attributes['active']) or (attributes['active'].blank? ? false : (attributes['active'] == '1')) or (attributes['active'].is_a? TrueClass) or (attributes['active'] == 't')
-        else
-          !attributes['active'] or attributes['active'].to_i  == 1 or attributes['active'].is_a? TrueClass or attributes['active'] == 't'
-        end    
+    def active?
+      !attributes['active'] or attributes['active'].is_a? TrueClass or attributes['active'].to_i == 1 or attributes['active'] == 't'
     end
 
     def planned?
-      attributes['planned'].to_i == 1 or attributes['planned'].is_a? TrueClass or attributes['planned'] == 't'
+      attributes['planned'].is_a? TrueClass or attributes['planned'].to_i == 1 or attributes['planned'] == 't'
     end
 
     def self.find_children(node_id, test_plan_id=nil, filters=nil, limit=300)
@@ -242,7 +233,7 @@ ORDER BY level, T.node_order
         end
         conditions[:path] = "#{node.path}_%"
       else
-        child_counts = Impasse::TestPlanCase.where("test_plan_id=?", test_plan_id).count
+        child_counts = Impasse::TestPlanCase.where(:test_plan_id => test_plan_id).count
         if child_counts > limit
           conditions[:level] = 3
         end
@@ -358,38 +349,7 @@ ORDER BY level, T.node_order
       WHERE path like '#{old_path}_%'
       END_OF_SQL
       
-      self.class.connection.update(sql)
-    end
-
-    def save_keywords!(keywords = "")
-      root_node = Impasse::Node.find(self.path.sub(/^\.(\d+)\.[\d\.]*$/, '\1').to_i)
-      project = Project.find(root_node.name)
-      project_keywords = Impasse::Keyword.where(project_id: project)
-      words = keywords.split(/\s*,\s*/)
-      words.delete_if {|word| word =~ /^\s*$/}.uniq!
-
-      node_keywords = self.node_keywords
-      keeps = []
-      words.each do |word|
-        keyword = project_keywords.detect {|k| k.keyword == word}
-        if keyword
-          node_keyword = node_keywords.detect {|nk| nk.keyword_id == keyword.id}
-          if node_keyword
-            keeps << node_keyword.id
-          else
-            new_node_keyword = Impasse::NodeKeyword.create(:keyword_id => keyword.id, :node_id => self.id)
-            keeps << new_node_keyword.id
-          end
-        else
-          new_keyword = Impasse::Keyword.create(:keyword => word, :project_id => project.id)
-          new_node_keyword = Impasse::NodeKeyword.create(:keyword_id => new_keyword.id, :node_id => self.id)
-          keeps << new_node_keyword.id
-        end
-      end
-
-      node_keywords.each do |node_keyword|
-        node_keyword.destroy unless keeps.include? node_keyword.id
-      end
+      ActiveRecord::Base.connection.update(sql)
     end
 
     private

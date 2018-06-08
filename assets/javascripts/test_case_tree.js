@@ -527,7 +527,7 @@ jQuery(document).ready(function ($) {
             });
     });
 
-    $("#testcase-dialog .add-test-step").on("click", function () {
+    $(document).on('click', "#testcase-dialog .add-test-step", function () {
         var id = 0;
         var test_steps = $("#testcase-dialog table.test-steps");
         test_steps.find("td.ui-sort-handle").each(function () {
@@ -589,12 +589,12 @@ jQuery(document).ready(function ($) {
         });
     });
 
-    $("#button-close-requirements").on("click", function (e) {
+    $(document).on('click', "#button-close-requirements", function (e) {
         $("#requirements-view").hide();
         e.preventDefault();
     });
 
-    $("#values_fixed_version_id").on("change", function (e) {
+    $(document).on('change', "#values_fixed_version_id", function (e) {
         var version_id = $(this).val();
         $.ajax({
             url: IMPASSE.url.requirementIssues,
@@ -610,7 +610,7 @@ jQuery(document).ready(function ($) {
         });
     });
 
-    $("#testcase-dialog a.remove_requirement").on("click", function (e) {
+    $(document).on('click', "#testcase-dialog a.remove_requirement", function (e) {
         var row = $(this).parents("tr");
         var requirementIssues = $(this).parents("div.requirement-issues");
         $.ajax({
@@ -642,7 +642,7 @@ jQuery(document).ready(function ($) {
         $("#copy-tests-view").hide();
     });
 
-    $("#testcase-dialog .add-screenshot").on("click", function (e) {
+    $(document).on('click', "#testcase-dialog .add-screenshot", function (e) {
         if (!pasteboard.copyAndPaste.isSupported() || !pasteboard.dragAndDrop.isSupported()) {
             alert("This browser doesn't support this feature.\nPlease use Firefox or Google chrome.");
             return;
@@ -668,7 +668,7 @@ jQuery(document).ready(function ($) {
         pasteboard.appFlow.start();
     });
 
-    $("#testcase-dialog .screenshot-delete").on("click", function (e) {
+    $(document).on('click', "#testcase-dialog .screenshot-delete", function (e) {
         if (!confirm(IMPASSE.label.textAreYouSure))
             return false;
         var $this = $(this);

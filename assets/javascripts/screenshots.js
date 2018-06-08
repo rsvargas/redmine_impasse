@@ -402,10 +402,10 @@ var pasteboard = {};
 	    $(window).bind("resize.imageeditorevent", function() {
 		setPosition();
 	    });
-	    $(".image-editor .upload").live("click.imageeditorevent", function() {
+	    $(".image-editor .upload").on("click.imageeditorevent", function() {
 		$(self).trigger("upload");
 	    });
-	    $(".image-editor .cancel").live("click.imageeditorevent", function() {
+	    $(".image-editor .cancel").on("click.imageeditorevent", function() {
 		$(self).trigger("cancel");
 	    });
 	}
@@ -571,7 +571,7 @@ var pasteboard = {};
 	};
     }
 
-    $(".screenshot-thumbnail").live("click", function(e) {
+    $(".screenshot-thumbnail").on("click", function(e) {
 	var overlay = $("<div/>").css({
 	    position: 'fixed', top:0, left: 0, zIndex: 2000, backgroundColor: 'rgba(0,0,0,0.3)',
 	    width: '100%', height: '100%'

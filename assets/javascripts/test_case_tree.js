@@ -527,7 +527,7 @@ jQuery(document).ready(function ($) {
             });
     });
 
-    $("#testcase-dialog .add-test-step").live("click", function () {
+    $("#testcase-dialog .add-test-step").on("click", function () {
         var id = 0;
         var test_steps = $("#testcase-dialog table.test-steps");
         test_steps.find("td.ui-sort-handle").each(function () {
@@ -559,7 +559,7 @@ jQuery(document).ready(function ($) {
     });
 
 
-    $("li[rel=test_case]", testcaseTree).live("click", function () {
+    $("li[rel=test_case]", testcaseTree).on("click", function () {
         $("#test-case-view").block(impasse_loading_options());
         var $node = $(this);
         var node_id = $(this).attr("id").replace("node_", "");
@@ -589,12 +589,12 @@ jQuery(document).ready(function ($) {
         });
     });
 
-    $("#button-close-requirements").live("click", function (e) {
+    $("#button-close-requirements").on("click", function (e) {
         $("#requirements-view").hide();
         e.preventDefault();
     });
 
-    $("#values_fixed_version_id").live("change", function (e) {
+    $("#values_fixed_version_id").on("change", function (e) {
         var version_id = $(this).val();
         $.ajax({
             url: IMPASSE.url.requirementIssues,
@@ -610,7 +610,7 @@ jQuery(document).ready(function ($) {
         });
     });
 
-    $("#testcase-dialog a.remove_requirement").live("click", function (e) {
+    $("#testcase-dialog a.remove_requirement").on("click", function (e) {
         var row = $(this).parents("tr");
         var requirementIssues = $(this).parents("div.requirement-issues");
         $.ajax({
@@ -642,7 +642,7 @@ jQuery(document).ready(function ($) {
         $("#copy-tests-view").hide();
     });
 
-    $("#testcase-dialog .add-screenshot").live("click", function (e) {
+    $("#testcase-dialog .add-screenshot").on("click", function (e) {
         if (!pasteboard.copyAndPaste.isSupported() || !pasteboard.dragAndDrop.isSupported()) {
             alert("This browser doesn't support this feature.\nPlease use Firefox or Google chrome.");
             return;
@@ -668,7 +668,7 @@ jQuery(document).ready(function ($) {
         pasteboard.appFlow.start();
     });
 
-    $("#testcase-dialog .screenshot-delete").live("click", function (e) {
+    $("#testcase-dialog .screenshot-delete").on("click", function (e) {
         if (!confirm(IMPASSE.label.textAreYouSure))
             return false;
         var $this = $(this);

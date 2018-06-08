@@ -81,7 +81,7 @@ jQuery(document).ready(function ($) {
 	    }
 	});
 
-    $('li[rel=test_case]', $tree).live('click', function() {
+    $('li[rel=test_case]', $tree).on('click', function() {
 	var $node = $(this);
 	$("#executions-view").block(impasse_loading_options());
 	show_test_case($(this).attr("id").replace("exec_", ""));
@@ -92,7 +92,7 @@ jQuery(document).ready(function ($) {
 	$tree.jstree("refresh", -1);
 	return false;
     });
-    $("#executions-view form").live("submit", function(e) {
+    $("#executions-view form").on("submit", function(e) {
 	var $this = $(this);
 	var post_save_function = function() { $.unblockUI() };
 	var execution_status = $this.find(":radio[name='execution[status]']:checked").val();
@@ -139,7 +139,7 @@ jQuery(document).ready(function ($) {
 	return false;
     });
 
-    $("#issue-dialog #button-create-issue").live("click", function(e) {
+    $("#issue-dialog #button-create-issue").on("click", function(e) {
 	$.ajax({
 	    url: IMPASSE.url.executionBugsCreate,
 	    type: 'POST',

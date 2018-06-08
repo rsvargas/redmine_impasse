@@ -86,7 +86,7 @@ jQuery(document).ready(function ($) {
             }
           });
 
-  $('li[rel=test_case]', $tree).on('click', function () {
+  $tree.on('click', 'li[rel=test_case]', function () {
     var $node = $(this);
     $("#executions-view").block(impasse_loading_options());
     show_test_case($(this).attr("id").replace("exec_", ""));
@@ -189,6 +189,7 @@ jQuery(document).ready(function ($) {
     var testcase_id = location.hash.replace(/^#testcase-/, "");
     show_test_case(testcase_id);
   }
+  
 
   $("input[name=execution_status]").change(function () {
     var checked = $("input[name=execution_status]:checked");

@@ -559,7 +559,7 @@ jQuery(document).ready(function ($) {
     });
 
 
-    $("li[rel=test_case]", testcaseTree).on("click", function () {
+    testcaseTree.on('click', "li[rel=test_case]", function () {
         $("#test-case-view").block(impasse_loading_options());
         var $node = $(this);
         var node_id = $(this).attr("id").replace("node_", "");

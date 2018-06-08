@@ -59,7 +59,7 @@ class ImpasseTestCaseController < ImpasseAbstractController
       begin
         ActiveRecord::Base.transaction do
           @node.save!
-          @node.save_keywords!(params[:node_keywords])
+          save_keywords(params[:node_keywords])
           @test_case.id = @node.id
           if @node.is_test_case? and params.include? :test_steps
             #---------------------------------------------------------------------      
@@ -141,7 +141,7 @@ class ImpasseTestCaseController < ImpasseAbstractController
       begin
         ActiveRecord::Base.transaction do
           save_node(@node)
-          @node.save_keywords!(params[:node_keywords])
+          save_keywords(params[:node_keywords])
           @test_case.save!
 
           if @node.is_test_case? and params.include? :test_steps

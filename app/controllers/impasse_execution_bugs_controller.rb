@@ -3,7 +3,6 @@ class ImpasseExecutionBugsController < ImpasseAbstractController
 
   menu_item :impasse
   before_action :find_project_by_project_id, :only => [:new, :create]
-  before_action :check_for_default_issue_status, :only => [:new, :create]
   before_action :build_new_issue_from_params, :only => [:new, :create]
   
   helper :journals

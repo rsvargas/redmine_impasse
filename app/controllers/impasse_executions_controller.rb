@@ -21,33 +21,37 @@ class ImpasseExecutionsController < ImpasseAbstractController
   def put
     @node = Impasse::Node.find(params[:test_plan_case][:test_case_id])
     test_case_ids = (@node.is_test_case?) ? [ @node.id ] : @node.all_decendant_cases.collect{|tc| tc.id}
-    if params[:execution] and params[:execution][:expected_date]
-      params[:execution][:expected_date] = Time.at(params[:execution][:expected_date].to_i)
+    if params[:execution]
+      permitted_execution_params = params.require(:execution).permit!
+      if params[:execution][:expected_date]
+        params[:execution][:expected_date] = Time.at(params[:execution][:expected_date].to_i)
+      end
     end
-
-    status = 'success'
+    
     errors = []
     for test_case_id in test_case_ids
       test_plan_case = Impasse::TestPlanCase.where(
         test_plan_id: params[:test_plan_case][:test_plan_id], test_case_id: test_case_id).first
       next unless test_plan_case
       execution = Impasse::Execution.where(test_plan_case_id: test_plan_case.id).first_or_initialize
-      execution.attributes = params.require(:execution).permit! if params[:execution]
+      execution.assign_attributes(permitted_execution_params) if params[:execution]
       if params[:record]
         execution.execution_ts = Time.now.to_datetime
         execution.executor_id = User.current.id
+        @execution_history = Impasse::ExecutionHistory.new(execution.attributes.except('id'))
       end
 
       begin
         ActiveRecord::Base.transaction do
           execution.save!
           if params[:record]
-            @execution_history = Impasse::ExecutionHistory.new(execution.attributes)
             @execution_history.save!
           end
         end
-      rescue
+      rescue Exception => e
+        logger.error "Got error #{e.message}: #{e.backtrace.join("\n")}"
         errors.concat(execution.errors.full_messages)
+        errors.concat(@execution_history.errors.full_messages) if @execution_history
       end
     end
     

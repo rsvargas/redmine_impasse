@@ -1,4 +1,52 @@
-= impasse
+= Impasse
 
-Impasse is test management tool like Testlink
+Impasse is test management tool like Testlink that works as a plugin for Redmine.
+
+Test case management
+
+Manage test plans
+
+Tester assignment
+
+Registration of scheduled test date
+
+Test execution management
+
+Drafting a bug vote
+
+Test progress / acquisition of metrics
+
+It has functions such as.
+
+In Impass, first create a test case for the entire application, create a test plan related to each version from this, and put the test case in it. For cases registered as a test plan, assign testers and scheduled execution dates so that the schedule can be grasped.
+
+The tester executes the case assigned to him and records the result. If the result of execution is unsuccessful, the content can be submitted as a Redmine issue. You can also see the test plan metrics as member- or daily aggregate results.
+
+= Installation
+
+From the base redmine (4.x) directory:
+  cd plugins		
+
+And clone the source from GitHub.
+
+  git clone https://github.com/Neticoa/redmine_impasse.git
+
+Finally, execute migration.
+
+  RAILS_ENV=production rake redmine:plugins:migrate
+
+= How to use
+= Setting
+= Test case management
+
+Test cases can be grouped in units called test suites. You can also put the test suite inside the test suite, which allows for detailed classification.
+
+To create a new test case, right-click on the test suite, open the context menu and select Create-> Test Case. This will open a dialog for entering the contents of the test case, so enter the details. The test step describes in order the operation contents and the expected result for executing the test case. You can change the order by dragging and dropping.
+
+Press Save when you are done.
+
+= Credits
+
+Impasse was originally developed by: 
+Yoshitaka Kawashima (https://github.com/kawasima/redmine_impasse)
 

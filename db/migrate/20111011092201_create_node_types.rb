@@ -1,4 +1,4 @@
-class CreateNodeTypes < ActiveRecord::Migration
+class CreateNodeTypes < ActiveRecord::Migration[4.2]
   def self.up
     create_table :impasse_node_types do |t|
       t.column :description, :string

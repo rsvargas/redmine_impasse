@@ -1,4 +1,4 @@
-class CreateExecutions < ActiveRecord::Migration
+class CreateExecutions < ActiveRecord::Migration[4.2]
   def self.up
     create_table :impasse_executions do |t|
       t.column :test_plan_case_id, :integer, :null=>false

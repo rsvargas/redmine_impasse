@@ -1,4 +1,4 @@
-class CreateImpasseRequirementIssues < ActiveRecord::Migration
+class CreateImpasseRequirementIssues < ActiveRecord::Migration[4.2]
   def self.up
     create_table :impasse_requirement_issues do |t|
       t.column :issue_id, :integer, :null => false

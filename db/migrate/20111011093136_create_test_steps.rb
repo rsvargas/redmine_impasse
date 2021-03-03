@@ -1,4 +1,4 @@
-class CreateTestSteps < ActiveRecord::Migration
+class CreateTestSteps < ActiveRecord::Migration[4.2]
   def self.up
     create_table :impasse_test_steps do |t|
       t.references :test_case, :null => false

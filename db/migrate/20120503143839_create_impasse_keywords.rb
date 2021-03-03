@@ -1,4 +1,4 @@
-class CreateImpasseKeywords < ActiveRecord::Migration
+class CreateImpasseKeywords < ActiveRecord::Migration[4.2]
   def self.up
     create_table :impasse_keywords do |t|
       t.column :keyword, :string, :null => false

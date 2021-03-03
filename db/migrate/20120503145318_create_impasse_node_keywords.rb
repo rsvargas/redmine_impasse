@@ -1,4 +1,4 @@
-class CreateImpasseNodeKeywords < ActiveRecord::Migration
+class CreateImpasseNodeKeywords < ActiveRecord::Migration[4.2]
   def self.up
     create_table :impasse_node_keywords do |t|
       t.column :node_id, :integer, :null => false

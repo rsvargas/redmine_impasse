@@ -1,4 +1,4 @@
-class CreateTestPlanCases < ActiveRecord::Migration
+class CreateTestPlanCases < ActiveRecord::Migration[4.2]
   def self.up
     create_table :impasse_test_plan_cases do |t|
       t.column :test_plan_id, :integer, :nullable => false

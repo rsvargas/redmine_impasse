@@ -19,5 +19,5 @@ else
   match 'projects/:project_id/impasse/requirement_issues/(:action(/:id))', :controller => 'impasse_requirement_issues', via: [:get, :post]
   match 'projects/:project_id/impasse/screenshots/:attachment_id(.:size).:format', :controller => 'impasse_screenshots', :action => 'show', :attachment_id => /\d+/, via: [:get, :post]
   match 'projects/:project_id/impasse/screenshots/(:action/(:id))', :controller => 'impasse_screenshots', via: [:get, :post]
-  match 'impasse/custom_fields/(:action(/:id))', :controller => 'impasse_custom_fields', via: [:get, :post, :patch]
+  match 'impasse/custom_fields/(:action(/:id))', :controller => 'impasse_custom_fields', via: [:get, :post, :patch, :delete]
 end

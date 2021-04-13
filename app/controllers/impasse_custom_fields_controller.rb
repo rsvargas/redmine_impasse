@@ -12,16 +12,17 @@ class ImpasseCustomFieldsController < ImpasseAbstractController
   end
 
   def new
-    @custom_field = begin
-      if params[:type].to_s.match(/.+CustomField$/)
-        params[:type].to_s.constantize.new(params[:custom_field])
-      end
-    rescue
+    @custom_field = CustomField.new_subclass_instance(params[:type])
+    if @custom_field.nil?
+      flash[:error] = l('activerecord.errors.messages.invalid')
+      redirect_to(:action => 'index')
+      return
+    else
+      @custom_field.field_format = 'string' if @custom_field.field_format.blank?
+      @custom_field.safe_attributes = params[:custom_field]
     end
-    (redirect_to(:action => 'index'); return) unless @custom_field.is_a?(CustomField)
     if (request.post? or request.patch?) and @custom_field.save
       flash[:notice] = l(:notice_successful_create)
-      call_hook(:controller_custom_fields_new_after_save, :params => params, :custom_field => @custom_field)
       redirect_to :action => 'index', :tab => @custom_field.class.name
     else
       @trackers = Tracker.all.order(:position)
@@ -30,7 +31,8 @@ class ImpasseCustomFieldsController < ImpasseAbstractController
 
   def edit
     @custom_field = CustomField.find(params[:id])
-    if (request.post? || request.put? or request.patch?) and @custom_field.update_attributes(params[:custom_field])
+    @custom_field.safe_attributes = params[:custom_field]
+    if (request.post? || request.put? or request.patch?) and @custom_field.save
       flash[:notice] = l(:notice_successful_update)
       call_hook(:controller_custom_fields_edit_after_save, :params => params, :custom_field => @custom_field)
       redirect_to :action => 'index', :tab => @custom_field.class.name

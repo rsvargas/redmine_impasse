@@ -3,3 +3,7 @@
 <%= render_tabs impasse_custom_fields_tabs %>
 
 <% html_title(l(:label_custom_field_plural)) -%>
+
+<%= javascript_tag do %>
+  $(function() { $("table.custom_fields tbody").positionedItems(); });
+<% end %>

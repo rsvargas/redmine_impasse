@@ -25,8 +25,7 @@ class ImpasseExecutionsController < ImpasseAbstractController
     if execution_params[:execution] and execution_params[:execution][:expected_date]
       execution_params[:execution][:expected_date] = Time.at(execution_params[:execution][:expected_date].to_i)
     end
-
-    status = 'success'
+    
     errors = []
     for test_case_id in test_case_ids
       test_plan_case = Impasse::TestPlanCase.where(
@@ -37,6 +36,7 @@ class ImpasseExecutionsController < ImpasseAbstractController
       if execution_params[:record]
         execution.execution_ts = Time.now.to_datetime
         execution.executor_id = User.current.id
+        @execution_history = Impasse::ExecutionHistory.new(execution.attributes.except('id'))
       end
 
       begin
@@ -47,8 +47,10 @@ class ImpasseExecutionsController < ImpasseAbstractController
             @execution_history.save!
           end
         end
-      rescue
+      rescue Exception => e
+        logger.error "Got error #{e.message}: #{e.backtrace.join("\n")}"
         errors.concat(execution.errors.full_messages)
+        errors.concat(@execution_history.errors.full_messages) if @execution_history
       end
     end
     
@@ -102,8 +104,8 @@ END_OF_SQL
     else
       @execution = executions.first
     end
-    @execution.update_attributes(params[:execution]) if params[:execution].present?
-    @execution_histories = Impasse::ExecutionHistory.where(:test_plan_case_id => @execution.test_plan_case_id).joins(:executor).order("execution_ts DESC")
+    @execution.attributes = params.require(:execution).permit! if params[:execution]
+    @execution_histories = Impasse::ExecutionHistory.joins(:executor).where("test_plan_case_id=?", @execution.test_plan_case_id).order("execution_ts DESC")
     if (request.post? or request.patch?) and @execution.save
       render :json => {'status'=>true}
     else
@@ -126,8 +128,6 @@ END_OF_SQL
       end
       assign_text = []
       if node.firstname or node.lastname
-        firstname = node.firstname
-        lastname  = node.lastname
         assign_text << User.new(:firstname => node.firstname, :lastname => node.lastname).name
       end
       if node.expected_date

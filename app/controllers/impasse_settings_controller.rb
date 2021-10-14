@@ -7,12 +7,12 @@ class ImpasseSettingsController < ImpasseAbstractController
   end
 
   def edit
-    @setting = Impasse::Setting.find_or_initialize_by(:project_id => @project.id)
+    @setting = Impasse::Setting.find_or_create_by(project_id: @project.id)
     unless params[:setting][:requirement_tracker]
       params[:setting][:requirement_tracker] = []
     end
-    @setting.update_attributes(params[:setting])
-    if request.put? or request.post? or request.patch?
+    @setting.attributes = params.require(:setting).permit! if params[:setting]
+    if request.put? || request.post? || request.patch?
       ActiveRecord::Base.transaction do
         custom_fields_by_type = {
           'Impasse::TestCaseCustomField'  => [],

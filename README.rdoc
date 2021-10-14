@@ -50,3 +50,6 @@ Press Save when you are done.
 Impasse was originally developed by: 
 Yoshitaka Kawashima (https://github.com/kawasima/redmine_impasse)
 
+* {Administration guide}[http://kawasima.github.com/redmine_impasse/administration_guide.html]
+* {User manual}[http://kawasima.github.com/redmine_impasse/user_manual.html]
+This is a redmine 3+ compatible version of the original plugin

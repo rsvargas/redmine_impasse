@@ -8,7 +8,6 @@ module Impasse
     
     #attr_accessor :id, :summary, :preconditions, :importance
 
-    has_many :test_steps, :dependent=>:destroy
     belongs_to :node, :foreign_key=>"id"
     has_many :requirement_cases
     has_many :requirement_issues, :through => :requirement_cases

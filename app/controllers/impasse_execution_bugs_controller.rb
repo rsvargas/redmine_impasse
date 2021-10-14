@@ -26,8 +26,12 @@ class ImpasseExecutionBugsController < ImpasseAbstractController
   include IssuesHelper
 
   def new
-    setting = Impasse::Setting.find_or_initialize_by(:project_id => @project)
-    @issue.tracker_id = setting.bug_tracker_id unless setting.bug_tracker_id.nil?
+    setting = Impasse::Setting.find_or_create_by(project_id: @project.id)
+    unless setting.bug_tracker_id.nil?
+      unless @project.trackers.find_by_id(setting.bug_tracker_id).nil?
+        @issue.tracker_id = setting.bug_tracker_id
+      end
+    end
 
     respond_to do |format|
       format.html { render :partial => 'new' }
@@ -41,7 +45,7 @@ class ImpasseExecutionBugsController < ImpasseAbstractController
     if @issue.save
       execution_bug = Impasse::ExecutionBug.new(:execution_id => execution_params[:execution_bug][:execution_id], :bug_id => @issue.id)
       execution_bug.save!
-
+      
       flash[:notice] = l(:notice_successful_create)
       respond_to do |format|
         format.json  { render :json => { :status => 'success', :issue_id => @issue.id } }

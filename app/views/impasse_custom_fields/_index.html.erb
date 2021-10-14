@@ -28,4 +28,4 @@
   </tbody>
 </table>
 
-<p><%= link_to l(:label_custom_field_new), { :controller => :impasse_custom_fields, :action => :new, :type => tab[:name] }, :class => 'icon icon-add' %></p>
+<p><%= link_to l(:label_custom_field_new), { :controller => :impasse_custom_fields, :action => :new, :type => tab[:name].gsub("-","::") }, :class => 'icon icon-add' %></p>

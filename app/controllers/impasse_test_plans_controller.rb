@@ -99,7 +99,7 @@ class ImpasseTestPlansController < ImpasseAbstractController
       else
         format.html
       end
-      format.json_impasse { render :json => @statistics }
+      format.json { render :json => @statistics }
     end
   end
 
@@ -108,7 +108,7 @@ class ImpasseTestPlansController < ImpasseAbstractController
       new_cases = 0
       nodes = Impasse::Node.where("id in (?)", params[:test_case_ids])
       ActiveRecord::Base.transaction do
-        for node in nodes
+        nodes.each do |node|
           test_case_ids = []
           if node.is_test_suite?
             test_case_ids.concat node.all_decendant_cases.collect{|n| n.id}
@@ -116,12 +116,11 @@ class ImpasseTestPlansController < ImpasseAbstractController
             test_case_ids << node.id
           end
 
-          for test_case_id in test_case_ids
-            test_plan_case =
-              Impasse::TestPlanCase.find_or_create_by(:test_case_id => test_case_id,
-                                                                                    :test_plan_id => params[:test_plan_id],
-                                                                                    :node_order => 0)
-            new_cases += 1
+          for test_case_id in test_case_ids         
+              test_plan_case =
+                Impasse::TestPlanCase.create_with(node_order: 0).find_or_create_by(test_case_id: test_case_id, 
+                test_plan_id: params[:test_plan_id])
+              new_cases += 1
           end
         end
       end
@@ -138,5 +137,17 @@ class ImpasseTestPlansController < ImpasseAbstractController
   def autocomplete
     @users = @project.users.like(params[:q]).limit(100)
     render :layout => false
+  end
+  
+  def coverage
+    @versions = @project.versions
+    @version = params[:id]
+    render :layout => true
+  end
+  
+  def coverage_case
+    @versions = @project.versions
+    @case = params[:id]
+    render :layout => true
   end
 end

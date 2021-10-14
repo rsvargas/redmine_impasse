@@ -8,7 +8,7 @@ var ypadding = 1;
 jQuery.ajax({
     url: '<%=url_for :controller=>:impasse_test_plans, :action=>:statistics, :project_id=>@project, :id=>@test_plan %>',
     type: 'get',
-    data: { type: "daily", format: "json_impasse" },
+    data: { type: "daily", format: "json", token: $('meta[name="csrf-token"]').attr('content') },
     success: function(data) {
         var minDate, maxDate, maxCount = 0;
         jQuery.each(data, function(i, series) {

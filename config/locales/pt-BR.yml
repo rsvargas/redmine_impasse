@@ -7,7 +7,7 @@ pt-BR:
   label_test_case_plural: "Caso de teste"
   label_test_suite_plural: "Suite de testes"
   label_execution_plural: "Execução de teste"
-  label_requirement_plural: "Exigência"
+  label_requirement_plural: "Exigências"
   label_impasse_plan_new: "Adicionar plano de teste"
   label_test_plans_list: "Lista de planos de teste"
   label_test_suite_name: "Suite de teste"
@@ -15,7 +15,7 @@ pt-BR:
   label_user_assign: "Atribuir usuários"
   label_execution: "Execução"
   label_statistics_assign: "Estatísticas"
-  label_screenshots: "Tela"
+  label_screenshots: "Telas"
 
   label_test_plan_new: "Novo plano de teste"
   label_test_case_new: "Novo caso de teste"
@@ -27,16 +27,16 @@ pt-BR:
   label_num_of_actual_cases: "Real"
   label_coverage: "Cobertura"
 
-  label_impasse_stat_total_cases: "Total de casos de teste" 
+  label_impasse_stat_total_cases: "Total de casos de teste"
   label_impasse_stat_total_executions: "Casos de teste executados"
-  label_impasse_stat_total_bugs: "Bugs"
-  label_impasse_stat_open_bugs: "Abertos"
+  label_impasse_stat_total_bugs: "Total de defeitos"
+  label_impasse_stat_open_bugs: "Defeitos abertos"
   label_impasse_stat_executions_rate: "Percentual de progresso"
   label_impasse_stat_bugs_rate: "Taxa de Bugs"
   label_impasse_stat_remain_cases: "Falta executar"
   label_impasse_stat_expected_cases: "Estimativa"
   label_impasse_stat_overview: "Visão geral"
-  label_impasse_stat_members: "Visão por tester"
+  label_impasse_stat_members: "Visão por testador"
   label_impasse_stat_daily: "Resumo diário"
 
   label_assined_to_myself: "Somente atribuídos a mim"
@@ -46,7 +46,7 @@ pt-BR:
   label_execution_status_3: "Bloqueado"
   label_execution_ts: "Executado"
   label_executor: "Executor"
-  label_execution_status: "Estado"
+  label_execution_status: "Situação"
 
   label_filters_query: "Filtrar por"
   label_filters_keywords: "Palavras chaves"
@@ -63,16 +63,16 @@ pt-BR:
   field_test_case: "Caso de teste"
   field_actions: "Ações"
   field_expected_results: "Resultados esperados"
-  field_execution_status: "Status de execução"
-  field_bug_tracker: "Tracker como bugs"
+  field_execution_status: "Situação da execução"
+  field_bug_tracker: "Rastreador de defeitos"
   field_expected_date: "A data prevista"
   field_requirement_tracker: "Tracker as requirements"
   field_num_of_cases: "Número necessário de casos de testes"
 
-  button_create_test_plan: "Criar um plano de teste"
-  
-  permission_view_testcases: "Ver casos de teste"
-  permission_manage_test_cases: "Gerenciar os casos de teste"
+  button_create_test_plan: "Criar plano de teste"
+
+  permission_view_testcases: "Visualizar casos de teste"
+  permission_manage_test_cases: "Gerenciar casos de teste"
 
   notice_delete_test_plans_first: "Remover planos de teste associados primeiro."
   notice_copy_cases_to_another_project: "Marque os casos que queira copiar e selecione um projeto de destino."
@@ -82,4 +82,3 @@ pt-BR:
 
   text_assign_cases: "Arraste e solte o caso de teste para adicioná-lo ao plano de teste."
   text_assign_users: "Arraste e solte sobre o caso de teste para atribuir os casos de teste a um tester."
-

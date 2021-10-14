@@ -23,7 +23,7 @@ class ImpasseCustomFieldsController < ImpasseAbstractController
     end
     if (request.post? or request.patch?) and @custom_field.save
       flash[:notice] = l(:notice_successful_create)
-      redirect_to :action => 'index', :tab => @custom_field.class.name
+      redirect_to :action => 'index', :tab => @custom_field.class.name.gsub("::","-")
     else
       @trackers = Tracker.all.order(:position)
     end

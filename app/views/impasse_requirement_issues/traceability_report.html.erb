@@ -1,0 +1,117 @@
+<%= form_tag({ :controller => 'impasse_requirement_issues', :action => 'traceability_report', :project_id => @project },
+             :method => :get, :id => 'query_form') do %>
+  <div id="query_form_with_buttons" class="hide-when-print">
+    <%= hidden_field_tag 'set_filter', '1' %>
+    <div id="query_form_content">
+      <fieldset id="filters" class="collapsible <%= @query.new_record? ? "" : "collapsed" %>">
+        <legend onclick="toggleFieldset(this);"><%= l(:label_filter_plural) %></legend>
+        <div style="<%= @query.new_record? ? "" : "display: none;" %>">
+          <%= render :partial => 'queries/filters', :locals => {:query => @query} %>
+        </div>
+      </fieldset>
+      <fieldset class="collapsible collapsed">
+        <legend onclick="toggleFieldset(this);"><%= l(:label_options) %></legend>
+        <div style="display: none;">
+          <table>
+            <tr>
+              <td><%= l(:field_column_names) %></td>
+              <td><%= render_query_columns_selection(@query) %></td>
+            </tr>
+            <tr>
+              <td><label for='group_by'><%= l(:field_group_by) %></label></td>
+              <td><%= select_tag('group_by',
+                                 options_for_select(
+                                     [[]] + @query.groupable_columns.collect {|c| [c.caption, c.name.to_s]},
+                                     @query.group_by)
+                      ) %></td>
+            </tr>
+            <tr>
+              <td><%= l(:button_show) %></td>
+              <td><%= available_block_columns_tags(@query) %></td>
+            </tr>
+          </table>
+        </div>
+      </fieldset>
+    </div>
+    <p class="buttons">
+      <%= link_to_function l(:button_apply), 'submit_query_form("query_form")', :class => 'icon icon-checked' %>
+      <%= link_to l(:button_clear), { :set_filter => 1, :project_id => @project }, :class => 'icon icon-reload'  %>
+      <% if @query.new_record? && User.current.allowed_to?(:save_queries, @project, :global => true) %>
+        <%= link_to_function l(:button_save),
+                             "$('#query_form').attr('action', '#{ @project ? new_project_query_path(@project) : new_query_path }'); submit_query_form('query_form')",
+                             :class => 'icon icon-save' %>
+      <% end %>
+    </p>
+  </div>
+<% end %>
+<%= error_messages_for 'query' %>
+<% if @query.valid? %>
+  <% if @issues.empty? %>
+    <p class="nodata"><%= l(:label_no_data) %></p>
+  <% else %>
+    <table class="list issues">
+        <thead>
+        <tr>
+            <th>#</th>
+            <th><%= l(:field_subject) %></th>
+            <th>Test Case</th>
+            <th>Step #</th>
+            <th>Action</th>
+            <th>Expected Results</th>
+        </tr>
+        </thead>
+        <tbody>
+        <% @issues.each do |issue| %>
+          <% if issue.test_cases.present? %>
+            <% issue.test_cases.each_with_index do |tc, index| %>
+              <% tc.test_steps.each_with_index do |ts, ts_index| %>
+                <tr id="issue-<%= h(issue.id) %>" class="<%= cycle('odd', 'even') %> <%= issue.css_classes %>">
+                  <% if index == 0 && ts_index ==0 %>
+                    <td class="id">
+                      <%= h(issue.id) %>
+                    </td>
+                    <td class="subject">
+                      <%= h(truncate(issue.subject, :length => 60)) %> (<%= h issue.status %>)
+                    </td>
+                  <% else %>
+                    <td class="id">
+                      &nbsp;
+                    </td>
+                    <td class="subject">
+                      &nbsp;
+                    </td>
+                  <% end %>
+                  <% if ts_index == 0 %>
+                    <td><%= raw "#{tc.id}: #{tc.node.name}" %></td>
+                  <% else %>
+                    <td>&nbsp;</td>
+                  <% end %>
+                    <td><%= raw ts.step_number %></td>
+                    <td><%= raw ts.actions %></td>
+                    <td><%= raw ts.expected_results %></td>
+                </tr>
+              <% end %>
+            <% end %>
+          <% else %>
+            <tr id="issue-<%= h(issue.id) %>" class="<%= cycle('odd', 'even') %> <%= issue.css_classes %>">
+                <td class="id">
+                    <%= h(issue.id) %>
+                </td>
+                <td class="subject">
+                    <%= h(truncate(issue.subject, :length => 60)) %> (<%= h issue.status %>)
+                </td>
+                <td>Not Assigned</td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+          <% end %>
+        <% end %>
+        </tbody>
+    </table>
+    <p class="pagination"><%= pagination_links_full @issue_pages, @issue_count %></p>
+    <% other_formats_links do |f| %>
+      <%= f.link_to 'CSV', :url => params %>
+    <% end %>
+  <% end %>
+<% end %>

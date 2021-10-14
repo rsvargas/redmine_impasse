@@ -48,6 +48,14 @@ object_to_prepare.to_prepare do
     :foreign_key => 'project_id',
     :association_foreign_key => 'custom_field_id'  
   end
+
+  Issue.class_eval do
+    has_many :requirement_issues,
+             :class_name => 'Impasse::RequirementIssue'
+
+    has_many :test_cases, :through => :requirement_issues,
+             :class_name => 'Impasse::TestCase'
+  end
 end
 
 Redmine::Plugin.register :redmine_impasse do
@@ -65,17 +73,17 @@ Redmine::Plugin.register :redmine_impasse do
   project_module :impasse do
     permission :view_testcases, {
       'impasse_test_case' => [:index, :show, :list, :keywords],
-      'impasse_test_plans' => [:index, :show, :list, :tc_assign, :user_assign, :statistics, :autocomplete],
+      'impasse_test_plans' => [:index, :show, :list, :tc_assign, :user_assign, :statistics, :autocomplete, :coverage],
       'impasse_executions' => [:index, :get_list],
       'impasse_requirement_issues' => [:index],
       'impasse_screenshots' => [:show],
     }
     permission :manage_testcases, {
       'impasse_test_case' => [:new, :edit, :destroy, :copy, :move, :copy_to_another_project, :screenshot],
-      'impasse_test_plans' => [:new, :edit, :destroy,:copy, :add_test_case, :remove_test_case],
+      'impasse_test_plans' => [:new, :edit, :destroy,:copy, :add_test_case, :remove_test_case, :coverage],
       'impasse_executions' => [:new, :edit, :destroy, :put],
       'impasse_execution_bugs' => [:new, :edit, :destroy, :upload_attachments],
-      'impasse_requirement_issues' => [:add_test_case, :remove_test_case],
+      'impasse_requirement_issues' => [:add_test_case, :remove_test_case, :traceability_report],
       'impasse_screenshots' => [:new, :destroy],
     }, :require => :member
 
@@ -92,7 +100,9 @@ Redmine::Plugin.register :redmine_impasse do
     menu.push :custom_field, {:controller => 'impasse_custom_fields'}, :caption => :label_custom_field_plural,
     :html => {:class => 'custom_fields'}
   end
-
   Mime::Type.register_alias "application/json", :json_impasse
+end
+Rails.configuration.to_prepare do
+  require 'impasse_issue_patch'
 end
 

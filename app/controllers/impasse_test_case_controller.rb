@@ -313,7 +313,7 @@ class ImpasseTestCaseController < ImpasseAbstractController
 
   def get_node(node_params)
     node = Impasse::Node.find(node_params[:id])
-    node.attributes = node_params.present? && node_params.permit!
+    node.update_attributes(node_params)
 
     if node.is_test_case?
       test_case = Impasse::TestCase.find(node_params[:id])

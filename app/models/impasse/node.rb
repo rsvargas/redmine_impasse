@@ -105,7 +105,7 @@ module Impasse
       sql = <<-'END_OF_SQL'
       SELECT node.*, tc.active
       FROM (
-        SELECT distinct parent.*, <%= @@length_for_sql %>(parent.path) - <%= @@length_for_sql %>(REPLACE(parent.path,'.','')) level
+        SELECT distinct parent.*, <%= @@length_for_sql %>(parent.path) - <%= @@length_for_sql %>(REPLACE(parent.path,'.','')) AS level
           FROM impasse_nodes AS parent
         JOIN impasse_nodes AS child
           ON parent.path = <%= @@substr_for_sql %>(child.path, 1, <%= @@length_for_sql %>(parent.path))

@@ -8,14 +8,16 @@ module ImpasseProjectsHelperPatch
     base.class_eval do
       #unloadable
       # alias_method_chain :project_settings_tabs, :impasse
+      alias_method :project_settings_tabs_without_impasse, :project_settings_tabs
+      alias_method :project_settings_tabs, :project_settings_tabs_with_impasse
     end
 
   end
 end
 
 module ProjectsHelperMethodsImpasse
-  def project_settings_tabs
-    tabs = super
+  def project_settings_tabs_with_impasse
+    tabs = project_settings_tabs_without_impasse
     action = {:name => 'impasse', :controller => :impasse_settings, :action => :show, :partial => 'impasse_settings/show', :label => :project_module_impasse}
 
     tabs << action if User.current.allowed_to?(action, @project)

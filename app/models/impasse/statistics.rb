@@ -149,7 +149,7 @@ INNER JOIN impasse_test_plan_cases AS tpc
 LEFT OUTER JOIN impasse_executions AS exe
   ON exe.test_plan_case_id = tpc.id
 WHERE tpc.test_plan_id=?
-GROUP BY CASE WHEN execution_ts IS NULL OR exe.status='0' THEN NULL ELSE execution_ts END
+GROUP BY execution_date
       END_OF_SQL
       statistics = find_by_sql([sql, test_plan_id])
 

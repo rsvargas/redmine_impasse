@@ -1,4 +1,4 @@
-class CreateImpasseSettings < ActiveRecord::Migration[4.2]
+class CreateImpasseSettings < ActiveRecord::Migration[5.1]
   def self.up
     create_table :impasse_settings do |t|
       t.references :project, :null => false

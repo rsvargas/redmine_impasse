@@ -1,4 +1,4 @@
-class CreateTestCases < ActiveRecord::Migration[4.2]
+class CreateTestCases < ActiveRecord::Migration[5.1]
   def self.up
     create_table :impasse_test_cases do |t|
       t.column :summary, :text

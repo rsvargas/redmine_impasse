@@ -1,4 +1,4 @@
-class CreateImpasseExecutionHistories < ActiveRecord::Migration[4.2]
+class CreateImpasseExecutionHistories < ActiveRecord::Migration[5.1]
   def self.up
     create_table :impasse_execution_histories do |t|
       t.column :test_plan_case_id, :integer, :null => false

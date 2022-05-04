@@ -1,4 +1,4 @@
-class CreateExecutionBugs < ActiveRecord::Migration[4.2]
+class CreateExecutionBugs < ActiveRecord::Migration[5.1]
   def self.up
     create_table :impasse_execution_bugs do |t|
       t.column :execution_id, :integer

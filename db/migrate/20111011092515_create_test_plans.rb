@@ -1,4 +1,4 @@
-class CreateTestPlans < ActiveRecord::Migration[4.2]
+class CreateTestPlans < ActiveRecord::Migration[5.1]
   def self.up
     create_table :impasse_test_plans do |t|
       t.column :version_id, :integer, :null => false

@@ -5,6 +5,7 @@ class ImpasseTestCaseController < ImpasseAbstractController
   
   helper :custom_fields
   include CustomFieldsHelper
+  include ImpasseTestCaseHelper
   include ImpasseScreenshotsHelper
   helper_method :collection_for_relation_type_select
 
@@ -116,12 +117,26 @@ class ImpasseTestCaseController < ImpasseAbstractController
     render :json => nodes
   end
 
+  # def move
+  #   node_params = params.permit!.to_h
+  #   nodes = []
+  #   node_params[:nodes].each do |i,nodes|
+  #     ActiveRecord::Base.transaction do
+  #       node, test_case = get_node(nodes)
+  #       save_node(node)
+  #       nodes << node
+  #     end
+  #   end
+  #
+  #   render :json => nodes
+  # end
+
   def move
     node_params = params.permit!.to_h
     nodes = []
-    node_params[:nodes].each do |i,nodes|
-      ActiveRecord::Base.transaction do 
-        node, test_case = get_node(nodes)
+    params[:nodes].each do |i,node_params|
+      ActiveRecord::Base.transaction do
+        node, test_case = get_node(node_params)
         save_node(node)
         nodes << node
       end
@@ -144,9 +159,24 @@ class ImpasseTestCaseController < ImpasseAbstractController
           save_keywords(@node, node_params[:node_keywords])
 
           if @node.is_test_case? and node_params.include? :test_steps
-            @test_steps = node_params[:test_steps].collect{|i, ts| Impasse::TestStep.new(ts) }
+            # @test_steps = node_params[:test_steps].collect{|i, ts| Impasse::TestStep.new(ts) }
+
+            #---------------------------------------------------------------------
+            # BUGFIX: <sorting test steps> sort test steps list correctly
+            #   params[:test_steps] --> tmp_params (hash with key corresponding to the step number) --> tmp (sorted array)
+            #---------------------------------------------------------------------
+            tmp_params = Hash.new
+            params[:test_steps].each do |k,v|
+              k = "#{v['step_number']}"
+              tmp_params[("#{k}").to_i] = v
+            end
+            tmp = tmp_params.sort
+            tmp_params.clear
+            @test_steps = tmp.collect{|i, ts| Impasse::TestStep.new(ts) }
+
             @test_steps.each{|ts| raise ActiveRecord::RecordInvalid.new(ts) unless ts.valid? }
             @test_case.test_steps.replace(@test_steps)
+
             tmp.clear
             #</sorting test steps>
             #---------------------------------------------------------------------

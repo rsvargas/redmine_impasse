@@ -1,4 +1,4 @@
-class CreateExecutionSteps < ActiveRecord::Migration
+class CreateExecutionSteps < ActiveRecord::Migration[5.1]
   def self.up
     create_table :impasse_execution_steps do |t|
       t.belongs_to :impasse_executions

@@ -144,10 +144,8 @@ module Impasse
       LEFT OUTER JOIN impasse_test_cases AS tc
         ON node.id = tc.id
       WHERE 1=1
-      <%- unless conditions.include? :filters_inactive -%>
         AND tc.active = :true OR tc.active IS NULL
-        ORDER BY level, node_order
-      <%- end -%>
+      ORDER BY level, node_order
       END_OF_SQL
 
       conditions = { :true => true }

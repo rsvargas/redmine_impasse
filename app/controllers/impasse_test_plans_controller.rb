@@ -92,21 +92,15 @@ class ImpasseTestPlansController < ImpasseAbstractController
       params[:type] = "default"
       @statistics = Impasse::Statistics.summary_default(@test_plan.id, params[:test_suite_id])
     end
-    if params[:format] == 'json'
-      respond_to do |format|
-        format.json { render :json => @statistics }
+    respond_to do |format|
+      if request.xhr?
+        format.html { render :partial => "impasse_test_plans/statistics/#{params[:type]}" }
+      else
+        format.html
       end
-    else
-      respond_to do |format|
-        if request.xhr?
-          format.html { render :partial => "impasse_test_plans/statistics/#{params[:type]}" }
-        else
-          format.html
-        end
-        format.json_impasse { render :json => @statistics }
-      end
+      format.json_impasse { render :json => @statistics }
     end
-  end
+   end
 
   def add_test_case
     if params.include? :test_case_ids
